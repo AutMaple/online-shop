@@ -6,6 +6,9 @@ import (
 )
 
 func RegisterRoutes(c *gin.Engine) {
-  c.GET("/spu", handlers.FetchCreateSpuPage)
-  c.POST("/spu", handlers.InsertSpuHandler)
+	c.GET("/spu/:id", handlers.SingleSpu)
+	c.POST("/spu", handlers.InsertSpuHandler)
+	c.GET("/spu", handlers.PageSpu)
+	c.PUT("/spu/:id", handlers.UpdateSpuHandler)
+	c.DELETE("/spu/:id", handlers.DeleteSpuHandler)
 }
