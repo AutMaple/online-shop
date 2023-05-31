@@ -6,5 +6,6 @@ import (
 )
 
 func RegisterRoutes(c *gin.Engine) {
-  c.POST("/spu/", handlers.InsertSpuHandler)
+  c.GET("/spu", handlers.FetchCreateSpuPage)
+  c.POST("/spu", handlers.InsertSpuHandler)
 }

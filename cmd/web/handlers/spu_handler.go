@@ -9,6 +9,12 @@ import (
 	"online.shop.autmaple.com/internal/dto"
 )
 
+func FetchCreateSpuPage(c *gin.Context) {
+  c.HTML(http.StatusOK, "spu.html", gin.H {
+    "title": "Create Spu",
+  })
+}
+
 func InsertSpuHandler(c *gin.Context) {
 	var spuDto dto.SpuDto
 	err := c.Bind(&spuDto)

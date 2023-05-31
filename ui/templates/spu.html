@@ -1,30 +1,178 @@
-{{define "spu"}}
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>{{.title}}</title>
+
+<head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-  </head>
-  <body>
-    <form>
-      <div>
-        <label for="name">name</label>
-        <input type="text" name="name" value="">
-      </div>
-      <div>
-        <label for="brand">brand</label>
-        <input type="text" name="brand" value="">
-      </div>
-      <div>
-        <label for="category">category</label>
-        <input type="text" name="category" value="">
-      </div>
-      <div>
-        <label for="attrs">attrs</label>
-        <input type="" name="name" value="">
-      </div>
-    </form>
-  </body>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新增属性</title>
+</head>
+
+<body>
+
+    <body>
+        <button id="add-attribute-btn">添加属性</button>
+        <div id="attribute-list"></div>
+        <div id="overlay"></div>
+        <div id="input-dialog">
+            <h3>请输入属性名和属性值</h3>
+            <div class="input-row">
+                <label for="attribute-name">属性名：</label>
+                <input type="text" id="attribute-name" required>
+            </div>
+            <div class="input-row">
+                <label for="attribute-value">属性值：</label>
+                <input type="text" id="attribute-value">
+                <button id="add-value-btn">添加值</button>
+            </div>
+            <div id="value-list"></div>
+            <div class="input-row">
+                <button id="confirm-btn">确定</button>
+                <button id="cancel-btn">取消</button>
+            </div>
+        </div>
+    </body>
+
+    <script>
+        var addAttributeBtn = document.getElementById('add-attribute-btn');
+        var overlay = document.getElementById('overlay');
+        var inputDialog = document.getElementById('input-dialog');
+        var attributeNameInput = document.getElementById('attribute-name');
+        var attributeValueInput = document.getElementById('attribute-value');
+        var confirmBtn = document.getElementById('confirm-btn');
+        var cancelBtn = document.getElementById('cancel-btn');
+        var valueList = document.getElementById('value-list');
+        var attributeList = document.getElementById('attribute-list');
+
+        var currentAttributeValues = [];
+
+        addAttributeBtn.onclick = function () {
+            overlay.style.display = 'block';
+            inputDialog.style.display = 'block';
+        };
+
+        attributeValueInput.onkeydown = function (e) {
+            if (e.keyCode === 13) { // Enter key
+                addAttributeValue();
+            }
+        };
+
+        function addAttributeValue() {
+            var attributeValue = attributeValueInput.value.trim();
+            if (attributeValue) {
+                var attributeValueEl = document.createElement('div');
+                attributeValueEl.textContent = attributeValue;
+                valueList.appendChild(attributeValueEl);
+                currentAttributeValues.push(attributeValue);
+                attributeValueInput.value = '';
+            }
+        }
+
+        document.getElementById('add-value-btn').onclick = function () {
+            addAttributeValue();
+        };
+
+        confirmBtn.onclick = function () {
+            if (attributeNameInput.checkValidity()) {
+                var attributeName = attributeNameInput.value;
+                var attributeText = attributeName + ': ' + currentAttributeValues.join(', ');
+                var attributeEl = document.createElement('div');
+                attributeEl.className = 'attribute-item';
+                attributeEl.textContent = attributeText;
+                var deleteBtn = document.createElement('button');
+                deleteBtn.textContent = '删除';
+                deleteBtn.onclick = function () {
+                    attributeList.removeChild(attributeEl);
+                };
+                attributeEl.appendChild(deleteBtn);
+                attributeList.appendChild(attributeEl);
+                attributeNameInput.value = '';
+                attributeValueInput.value = '';
+                currentAttributeValues = [];
+                valueList.innerHTML = '';
+                overlay.style.display = 'none';
+                inputDialog.style.display = 'none';
+            }
+        };
+
+        cancelBtn.onclick = function () {
+            attributeNameInput.value = '';
+            attributeValueInput.value = '';
+            currentAttributeValues = [];
+            valueList.innerHTML = '';
+            overlay.style.display = 'none';
+            inputDialog.style.display = 'none';
+        };
+
+        // 保留至少一个属性输入
+    </script>
+
+    <style>
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        #input-dialog {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        #input-dialog h3 {
+            margin-top: 0;
+        }
+
+        .input-row {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-row label {
+            display: inline-block;
+            width: 100px;
+            text-align: right;
+            margin-right: 10px;
+        }
+
+        .input-row input[type="text"] {
+            flex-grow: 1;
+        }
+
+        #add-value-btn {
+            margin-left: 10px;
+        }
+
+        #value-list {
+            margin-top: 10px;
+        }
+
+        #attribute-list {
+            margin-top: 20px;
+            position: relative;
+        }
+
+        .attribute-item {
+            margin-bottom: 10px;
+        }
+
+        .attribute-item button {
+            position: absolute;
+            right: 0;
+        }
+    </style>
+</body>
+
 </html>
-{{end}}

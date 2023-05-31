@@ -18,6 +18,10 @@ func init() {
 		Stack().Logger()
 }
 
+func Logger() zerolog.Logger {
+  return logger
+}
+
 func Trace(msgTemplate string, v ...any) {
 	msg := fmt.Sprintf(msgTemplate, v...)
 	logger.Trace().Msg(msg)

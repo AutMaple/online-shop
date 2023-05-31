@@ -26,7 +26,6 @@ func init() {
 		Password: "root",
 		Database: "online_shop",
 	}
-  log.Info("=============== start open mysql")
 	openMysql()
 }
 func mysqlConnLink() string {
@@ -55,4 +54,3 @@ func openMysql() {
 func GetMysqlDB() *sql.DB {
 	return mysqlDB
 }
-
