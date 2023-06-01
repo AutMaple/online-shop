@@ -274,3 +274,52 @@ func (o *Option) QueryByAttrId(tx *sql.Tx) ([]*Option, error) {
 	}
 	return options, nil
 }
+
+func (a *Attr) QueryOptionIds(tx *sql.Tx) ([]int, error) {
+	stmt := `select id from goods_attr_option where attr_id = ?`
+	prepare, err := dbutil.ToPrepare(tx, stmt)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := prepare.Query(a.ID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var optionIdList []int
+	for rows.Next() {
+		var optionId int
+		err := rows.Scan(&optionId)
+		if err != nil {
+			return nil, err
+		}
+		optionIdList = append(optionIdList, optionId)
+	}
+	return optionIdList, nil
+}
+
+func (a *Attr) Delete(tx *sql.Tx) error {
+	stmt := `update goods_attr set enable = false where id = ?`
+	prepare, err := dbutil.ToPrepare(tx, stmt)
+	if err != nil {
+		return err
+	}
+	_, err = prepare.Exec(a.ID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (o *Option) Delete(tx *sql.Tx) error {
+	stmt := `update goods_attr_option set enable = false where id = ?`
+	prepare, err := dbutil.ToPrepare(tx, stmt)
+	if err != nil {
+		return err
+	}
+	_, err = prepare.Exec(o.ID)
+	if err != nil {
+		return err
+	}
+	return nil
+}

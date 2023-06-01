@@ -8,8 +8,9 @@ import (
 )
 
 const (
-	MsgInvalidId    = "Invalid ID"
-	MsgInvalidParam = "Invalid Params"
+	MsgInvalidId      = "Invalid ID"
+	MsgInvalidParam   = "Invalid Params"
+	MsgRecordNotFound = "Record Not Found"
 )
 
 func ServerError(c *gin.Context, err error) {

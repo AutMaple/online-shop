@@ -129,6 +129,57 @@ func PageQuerySpu(offset, size int) ([]*dto.SpuDto, error) {
 }
 
 // 删除应该是逻辑删除
-func DeleteSpu() {
-
+func DeleteSpu(spuId int) error {
+	// 1. 找到 spu
+	spu := &models.Spu{ID: spuId}
+	// 2. 找到 attr
+	attrIdList, err := spu.QueryAttrId(nil)
+	if err != nil {
+		return err
+	}
+	attr := &models.Attr{}
+	// 3. 找到 options
+	var totalOptionIds []int
+	for _, attrId := range attrIdList {
+		attr.ID = attrId
+		optionIdList, err := attr.QueryOptionIds(nil)
+		if err != nil {
+			return err
+		}
+		totalOptionIds = append(totalOptionIds, optionIdList...)
+	}
+	// TODO 4. 找到 SKU
+	// 5. 执行删除操作
+	tx, err := db.GetMysqlDB().Begin()
+	if err != nil {
+		return err
+	}
+	// 5.1 删除 spu
+	err = spu.Delete(tx)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	// 5.2 删除 attr
+	for _, attrId := range attrIdList {
+		attr.ID = attrId
+		err := attr.Delete(tx)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+	// 5.3 删除 option
+	option := &models.Option{}
+	for _, optionId := range totalOptionIds {
+		option.ID = optionId
+		err := option.Delete(tx)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+	// 5.4 TODO 删除 sku
+	tx.Commit()
+	return nil
 }

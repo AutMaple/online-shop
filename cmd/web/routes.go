@@ -11,6 +11,7 @@ func RegisterRoutes(c *gin.Engine) {
 	c.POST("/spu", handlers.InsertSpuHandler)
 	// c.GET("/spu", handlers.PageSpu)
 	c.GET("/spu", handlers.PageQuerySpu)
-	c.PUT("/spu/:id", handlers.UpdateSpuHandler)
-	c.DELETE("/spu/:id", handlers.DeleteSpuHandler)
+	// c.PUT("/spu/:id", handlers.UpdateSpuHandler)
+	// c.DELETE("/spu/:id", handlers.DeleteSpuHandler)
+	c.DELETE("/spu/:id", handlers.DeleteSpu)
 }
