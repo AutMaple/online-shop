@@ -111,6 +111,23 @@ func QuerySpu(id int) (*dto.SpuDto, error) {
 	return &spuDto, nil
 }
 
+func PageQuerySpu(offset, size int) ([]*dto.SpuDto, error) {
+	spu := models.Spu{}
+	spuList, err := spu.PageQuery(nil, offset, size)
+	if err != nil {
+		return nil, err
+	}
+	var spuDtoList []*dto.SpuDto
+	for _, spu := range spuList {
+		spuDto, err := QuerySpu(spu.ID)
+		if err != nil {
+			return nil, err
+		}
+		spuDtoList = append(spuDtoList, spuDto)
+	}
+	return spuDtoList, err
+}
+
 // 删除应该是逻辑删除
 func DeleteSpu() {
 

@@ -60,6 +60,33 @@ func QuerySpu(c *gin.Context) {
 	c.JSON(http.StatusOK, spuDto)
 }
 
+func PageQuerySpu(c *gin.Context) {
+	offsetStr := c.DefaultQuery("offset", "1")
+	sizeStr := c.DefaultQuery("size", "20")
+	size, err := strconv.Atoi(sizeStr)
+	if err != nil {
+		log.Error(err, "")
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Invalid Param: size",
+		})
+		return
+	}
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil {
+		log.Error(err, "")
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Invalid Param: offset",
+		})
+		return
+	}
+	spuDtoList, err := services.PageQuerySpu(offset, size)
+	if err != nil {
+		handlerutil.ServerError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, spuDtoList)
+}
+
 // GET /spu?offset=10&size=20
 func PageSpu(c *gin.Context) {
 	offsetStr := c.DefaultQuery("offset", "1")
