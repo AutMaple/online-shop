@@ -55,3 +55,12 @@ func InsertSpu(spuDto *dto.SpuDto) error {
 	tx.Commit()
 	return nil
 }
+
+func QuerySpu() {
+  
+}
+
+// 删除应该是逻辑删除
+func DeleteSpu() {
+
+}

@@ -7,7 +7,8 @@ CREATE TABLE goods_spu(
   id INT PRIMARY KEY AUTO_INCREMENT COMMENT 'ID',
   name VARCHAR(255) NOT NULL COMMENT '商品名',
   brand_id INT NOT NULL COMMENT '品牌 ID',
-  category_id INT NOT NULL COMMENT '类别 ID'
+  category_id INT NOT NULL COMMENT '类别 ID',
+  enable BOOLEAN NOT NULL DEFAULT TRUE COMMENT '是否可用'
 );
 
 DROP TABLE IF EXISTS goods_attr;
