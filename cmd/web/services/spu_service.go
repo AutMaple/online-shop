@@ -6,15 +6,15 @@ import (
 	"online.shop.autmaple.com/internal/models"
 )
 
-func InsertSpu(spuDto *dto.SpuDto) error {
+func InsertSpu(spuForm *dto.SpuForm) error {
 	tx, err := db.GetMysqlDB().Begin()
 	if err != nil {
 		return err
 	}
 	spu := &models.Spu{
-		Name:       spuDto.Name,
-		BrandId:    spuDto.Brand,
-		CategoryId: spuDto.Category,
+		Name:       spuForm.Name,
+		BrandId:    spuForm.Brand,
+		CategoryId: spuForm.Category,
 	}
 	// 1.插入SPU
 	spuId, err := spu.Insert(tx)
@@ -25,7 +25,7 @@ func InsertSpu(spuDto *dto.SpuDto) error {
 	}
 	// 2.插入属性
 	var attrIds []int
-	for _, attrDto := range spuDto.Attrs {
+	for _, attrDto := range spuForm.Attrs {
 		attr := &models.Attr{
 			Attr: attrDto.Attr,
 		}
@@ -46,7 +46,7 @@ func InsertSpu(spuDto *dto.SpuDto) error {
 
 	// 4. 建立 Attr 与 Options 之间的关系
 	for i := range attrIds {
-		err := spu.AttrJoinOptions(tx, attrIds[i], spuDto.Attrs[i].Options)
+		err := spu.AttrJoinOptions(tx, attrIds[i], spuForm.Attrs[i].Options)
 		if err != nil {
 			tx.Rollback()
 			return err
@@ -56,8 +56,59 @@ func InsertSpu(spuDto *dto.SpuDto) error {
 	return nil
 }
 
-func QuerySpu() {
-  
+func QuerySpu(id int) (*dto.SpuDto, error) {
+	// 1. 查询 spu 的属性
+	spuDto := *&dto.SpuDto{ID: id}
+	spu := models.Spu{ID: id}
+	err := spu.QueryById(nil)
+	if err != nil {
+		return nil, err
+	}
+	spuDto.Name = spu.Name
+	// 2. 查询品牌
+	brand := &models.Brand{ID: spu.BrandId}
+	err = brand.QueryById(nil)
+	if err != nil {
+		return nil, err
+	}
+	spuDto.Brand = brand
+	// 3. 查询分类
+	category := &models.Category{ID: spu.CategoryId}
+	err = category.QueryById(nil)
+	if err != nil {
+		return nil, err
+	}
+	spuDto.Category = category
+	// 4. 查询属性
+	attrIds, err := spu.QueryAttrId(nil)
+	if err != nil {
+		return nil, err
+	}
+	var attrDtos []*dto.AttrDto
+	for _, attrId := range attrIds {
+		attr := &models.Attr{ID: attrId}
+		err := attr.QueryById(nil)
+		if err != nil {
+			return nil, err
+		}
+		attrDtos = append(attrDtos, &dto.AttrDto{ID: attr.ID, Attr: attr.Attr})
+	}
+	spuDto.Attrs = attrDtos
+	// 5. 查询选项
+	for _, attrDto := range attrDtos {
+		option := &models.Option{AttrId: attrDto.ID}
+		options, err := option.QueryByAttrId(nil)
+		if err != nil {
+			return nil, err
+		}
+		var optionsDto []*dto.OptionDto
+		for _, o := range options {
+			dto := &dto.OptionDto{ID: o.ID, Value: o.Value}
+			optionsDto = append(optionsDto, dto)
+		}
+		attrDto.Options = optionsDto
+	}
+	return &spuDto, nil
 }
 
 // 删除应该是逻辑删除

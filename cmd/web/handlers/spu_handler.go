@@ -12,6 +12,7 @@ import (
 	"online.shop.autmaple.com/internal/configs/log"
 	"online.shop.autmaple.com/internal/dto"
 	"online.shop.autmaple.com/internal/models"
+	"online.shop.autmaple.com/internal/utils/handlerutil"
 )
 
 // GET /spu/:id
@@ -21,7 +22,7 @@ func SingleSpu(c *gin.Context) {
 	if err != nil {
 		log.Error(err, "")
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"error": "Invalid ID",
+			"message": handlerutil.MsgInvalidId,
 		})
 		return
 	}
@@ -34,13 +35,29 @@ func SingleSpu(c *gin.Context) {
 			})
 			return
 		}
-		log.Error(err, "")
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": http.StatusText(http.StatusInternalServerError),
-		})
+		handlerutil.ServerError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, spu)
+}
+
+// /spu/:id
+func QuerySpu(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		log.Error(err, "")
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": handlerutil.MsgInvalidId,
+		})
+		return
+	}
+	spuDto, err := services.QuerySpu(id)
+	if err != nil {
+		handlerutil.ServerError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, spuDto)
 }
 
 // GET /spu?offset=10&size=20
@@ -66,10 +83,7 @@ func PageSpu(c *gin.Context) {
 	spu := &models.Spu{}
 	spuList, err := spu.PageQuery(nil, offset, size)
 	if err != nil {
-		log.Error(err, "")
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": http.StatusText(http.StatusInternalServerError),
-		})
+		handlerutil.ServerError(c, err)
 		return
 	}
 	if len(spuList) <= 0 {
@@ -80,8 +94,8 @@ func PageSpu(c *gin.Context) {
 
 // POST /spu
 func InsertSpuHandler(c *gin.Context) {
-	var spuDto dto.SpuDto
-	err := c.Bind(&spuDto)
+	var spuForm dto.SpuForm
+	err := c.Bind(&spuForm)
 	if err != nil {
 		log.Error(err, "")
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
@@ -89,7 +103,7 @@ func InsertSpuHandler(c *gin.Context) {
 		})
 		return
 	}
-	services.InsertSpu(&spuDto)
+	services.InsertSpu(&spuForm)
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Insert Successful",
 	})
@@ -102,17 +116,20 @@ func DeleteSpuHandler(c *gin.Context) {
 	if err != nil {
 		log.Error(err, "")
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Invalid Id",
+			"message": handlerutil.MsgInvalidId,
 		})
 		return
 	}
 	var spu = &models.Spu{ID: id}
 	err = spu.Delete(nil)
 	if err != nil {
-		log.Error(err, "")
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": http.StatusText(http.StatusInternalServerError),
-		})
+		if errors.Is(err, models.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": err.Error(),
+			})
+			return
+		}
+		handlerutil.ServerError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -127,18 +144,28 @@ func UpdateSpuHandler(c *gin.Context) {
 	if err != nil {
 		log.Error(err, "")
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Invalid Id",
+			"message": handlerutil.MsgInvalidId,
 		})
 		return
 	}
 	spu := &models.Spu{ID: id}
-	c.Bind(spu)
-	err = spu.Update(nil)
+	err = c.ShouldBindJSON(spu)
 	if err != nil {
 		log.Error(err, "")
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": http.StatusText(http.StatusInternalServerError),
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": handlerutil.MsgInvalidParam,
 		})
+		return
+	}
+	err = spu.Update(nil)
+	if err != nil {
+		if errors.Is(err, models.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": err.Error(),
+			})
+			return
+		}
+		handlerutil.ServerError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{

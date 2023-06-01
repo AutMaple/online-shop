@@ -2,20 +2,19 @@ package models
 
 import (
 	"database/sql"
-
 	"online.shop.autmaple.com/internal/utils/dbutil"
 )
 
 type Spu struct {
-	ID         int
-	Name       string
-	BrandId    int
-	CategoryId int
+	ID         int    `json:"id"`
+	Name       string `json:"name" binding:"required"`
+	BrandId    int    `json:"brandId" binding:"required,min=1"`
+	CategoryId int    `json:"categoryId" binding:"required,min=1"`
 }
 
 type Attr struct {
-	ID   int
-	Attr string
+	ID   int    `json:"id"`
+	Attr string `json:"attr" binding:"required"`
 }
 
 type Sku struct {
@@ -23,8 +22,25 @@ type Sku struct {
 	SkuId int
 }
 
+type Brand struct {
+	ID    int    `json:"id"`
+	Name  string `json:"name"`
+	Image string `json:"image"`
+}
+
+type Category struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+type Option struct {
+	ID     int    `json:"id"`
+	AttrId int    `json:"attrId"`
+	Value  string `json:"value"`
+}
+
 func (s *Spu) QueryById(tx *sql.Tx) error {
-	stmt := `select name, brand_id, category_id from goods_spu where id = ?`
+	stmt := `SELECT name, brand_id, category_id FROM goods_spu WHERE id = ? AND enable = true`
 	prepare, err := dbutil.ToPrepare(tx, stmt)
 	if err != nil {
 		return err
@@ -39,9 +55,9 @@ func (s *Spu) QueryById(tx *sql.Tx) error {
 }
 
 func (s *Spu) PageQuery(tx *sql.Tx, offset, size int) ([]*Spu, error) {
-	stmt := `select name, brand_id, category_id from goods_spu
-  where id >= (select id from goods_spu order by id limit ?, 1)
-  order by id limit ?`
+	stmt := `SELECT id, name, brand_id, category_id FROM goods_spu
+  WHERE id >= (SELECT id FROM goods_spu ORDER BY id LIMIT ?, 1) AND enable = true
+  ORDER BY id LIMIT ?`
 	prepare, err := dbutil.ToPrepare(tx, stmt)
 	if err != nil {
 		return nil, err
@@ -56,15 +72,14 @@ func (s *Spu) PageQuery(tx *sql.Tx, offset, size int) ([]*Spu, error) {
 	var res []*Spu
 	for rows.Next() {
 		var spu Spu
-		rows.Scan(&spu.Name, &spu.BrandId, &spu.CategoryId)
+		rows.Scan(&spu.ID, &spu.Name, &spu.BrandId, &spu.CategoryId)
 		res = append(res, &spu)
 	}
 	return res, nil
 }
 
 func (s *Spu) Insert(tx *sql.Tx) (int, error) {
-	stmt := `insert into goods_spu(name,brand_id,category_id) 
-  values(?,?,?)`
+	stmt := `INSERT INTO goods_spu(name,brand_id,category_id) VALUES(?,?,?)`
 	prepare, err := dbutil.ToPrepare(tx, stmt)
 	if err != nil {
 		return -1, err
@@ -82,7 +97,7 @@ func (s *Spu) Insert(tx *sql.Tx) (int, error) {
 }
 
 func (s *Spu) InsertAttr(tx *sql.Tx, attr *Attr) (int, error) {
-	stmt := `insert into goods_attr(attr) values(?)`
+	stmt := `INSERT INTO goods_attr(attr) VALUES(?)`
 	prepare, err := dbutil.ToPrepare(tx, stmt)
 	if err != nil {
 		return -1, err
@@ -99,8 +114,45 @@ func (s *Spu) InsertAttr(tx *sql.Tx, attr *Attr) (int, error) {
 	return int(id), err
 }
 
+func (a *Attr) QueryById(tx *sql.Tx) error {
+	stmt := `select attr from goods_attr where id = ?`
+	prepare, err := dbutil.ToPrepare(tx, stmt)
+	if err != nil {
+		return err
+	}
+	result := prepare.QueryRow(a.ID)
+	err = result.Scan(&a.Attr)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Spu) QueryAttrId(tx *sql.Tx) ([]int, error) {
+	stmt := `select attr_id from goods_spu_attr where spu_id = ?`
+	prepare, err := dbutil.ToPrepare(tx, stmt)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := prepare.Query(s.ID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var attrIds []int
+	for rows.Next() {
+		var id int
+		err = rows.Scan(&id)
+		if err != nil {
+			return nil, err
+		}
+		attrIds = append(attrIds, id)
+	}
+	return attrIds, nil
+}
+
 func (s *Spu) JoinAttr(tx *sql.Tx, attrIds []int) error {
-	stmt := `insert into goods_spu_attr(spu_id, attr_id) values(?, ?)`
+	stmt := `INSERT INTO goods_spu_attr(spu_id, attr_id) VALUES(?, ?)`
 	prepare, err := dbutil.ToPrepare(tx, stmt)
 	if err != nil {
 		return err
@@ -116,7 +168,7 @@ func (s *Spu) JoinAttr(tx *sql.Tx, attrIds []int) error {
 }
 
 func (s *Spu) AttrJoinOptions(tx *sql.Tx, attrId int, options []string) error {
-	stmt := `insert into goods_attr_option(attr_id, value) values(?, ?)`
+	stmt := `INSERT INTO goods_attr_option(attr_id, value) VALUES(?, ?)`
 	prepare, err := dbutil.ToPrepare(tx, stmt)
 	if err != nil {
 		return err
@@ -132,28 +184,93 @@ func (s *Spu) AttrJoinOptions(tx *sql.Tx, attrId int, options []string) error {
 }
 
 func (s *Spu) Update(tx *sql.Tx) error {
-	stmt := `update goods_spu set name = ?, brand_id = ?, category_id = ? where id = ?`
+	stmt := `UPDATE goods_spu SET name = ?, brand_id = ?, category_id = ? WHERE id = ? AND enable = true`
 	prepare, err := dbutil.ToPrepare(tx, stmt)
 	if err != nil {
 		return err
 	}
 	defer prepare.Close()
-	_, err = prepare.Exec(s.Name, s.BrandId, s.CategoryId, s.ID)
+	result, err := prepare.Exec(s.Name, s.BrandId, s.CategoryId, s.ID)
+	if err != nil {
+		return err
+	}
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if affected == 0 {
+		return ErrRecordNotFound
+	}
+	return nil
+}
+
+func (s *Spu) Delete(tx *sql.Tx) error {
+	stmt := `UPDATE goods_spu SET enable = false WHERE id = ? and enable = true`
+	prepare, err := dbutil.ToPrepare(tx, stmt)
+	if err != nil {
+		return nil
+	}
+	result, err := prepare.Exec(s.ID)
+	if err != nil {
+		return err
+	}
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if affected == 0 {
+		return ErrRecordNotFound
+	}
+	return nil
+}
+
+func (b *Brand) QueryById(tx *sql.Tx) error {
+	stmt := `select name, image from goods_brand where id = ?`
+	prepare, err := dbutil.ToPrepare(tx, stmt)
+	if err != nil {
+		return err
+	}
+	row := prepare.QueryRow(b.ID)
+	err = row.Scan(&b.Name, &b.Image)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *Spu) Delete(tx *sql.Tx) error {
-	stmt := `delete from goods_spu where id = ?`
+func (c *Category) QueryById(tx *sql.Tx) error {
+	stmt := `select name from goods_category where id = ?`
 	prepare, err := dbutil.ToPrepare(tx, stmt)
 	if err != nil {
-		return nil
+		return err
 	}
-	_, err = prepare.Exec(s.ID)
+	row := prepare.QueryRow(c.ID)
+	err = row.Scan(&c.Name)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (o *Option) QueryByAttrId(tx *sql.Tx) ([]*Option, error) {
+	stmt := `select id, attr_id, value from goods_attr_option where attr_id = ?`
+	prepare, err := dbutil.ToPrepare(tx, stmt)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := prepare.Query(o.AttrId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var options []*Option
+	for rows.Next() {
+		var option Option
+		err := rows.Scan(&option.ID, &option.AttrId, &option.Value)
+		if err != nil {
+			return nil, err
+		}
+		options = append(options, &option)
+	}
+	return options, nil
 }
