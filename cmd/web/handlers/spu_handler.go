@@ -10,6 +10,7 @@ import (
 	"online.shop.autmaple.com/cmd/web/services"
 	"online.shop.autmaple.com/internal/configs/log"
 	"online.shop.autmaple.com/internal/dto"
+	"online.shop.autmaple.com/internal/models"
 	"online.shop.autmaple.com/internal/utils/handlerutil"
 )
 
@@ -60,6 +61,10 @@ func PageQuerySpu(c *gin.Context) {
 	}
 	spuDtoList, err := services.PageQuerySpu(offset, size)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			handlerutil.RecordNotFoundError(c)
+			return
+		}
 		handlerutil.ServerError(c, err)
 		return
 	}
@@ -96,6 +101,10 @@ func DeleteSpu(c *gin.Context) {
 	}
 	err = services.DeleteSpu(id)
 	if err != nil {
+		if errors.Is(err, models.ErrRecordNotFound) {
+			handlerutil.RecordNotFoundError(c)
+			return
+		}
 		handlerutil.ServerError(c, err)
 		return
 	}

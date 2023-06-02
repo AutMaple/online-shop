@@ -13,8 +13,9 @@ type Spu struct {
 }
 
 type Attr struct {
-	ID   int    `json:"id"`
-	Attr string `json:"attr" binding:"required"`
+	ID    int    `json:"id"`
+	SpuID int    `json:"spuId"`
+	Attr  string `json:"attr" binding:"required"`
 }
 
 type Sku struct {
@@ -204,6 +205,7 @@ func (s *Spu) Update(tx *sql.Tx) error {
 	return nil
 }
 
+// Delete return ErrRecordNotFound error if no rows affected
 func (s *Spu) Delete(tx *sql.Tx) error {
 	stmt := `UPDATE goods_spu SET enable = false WHERE id = ? and enable = true`
 	prepare, err := dbutil.ToPrepare(tx, stmt)
@@ -253,7 +255,7 @@ func (c *Category) QueryById(tx *sql.Tx) error {
 }
 
 func (o *Option) QueryByAttrId(tx *sql.Tx) ([]*Option, error) {
-	stmt := `select id, attr_id, value from goods_attr_option where attr_id = ?`
+	stmt := `select id, value from goods_attr_option where attr_id = ?`
 	prepare, err := dbutil.ToPrepare(tx, stmt)
 	if err != nil {
 		return nil, err
@@ -266,7 +268,7 @@ func (o *Option) QueryByAttrId(tx *sql.Tx) ([]*Option, error) {
 	var options []*Option
 	for rows.Next() {
 		var option Option
-		err := rows.Scan(&option.ID, &option.AttrId, &option.Value)
+		err := rows.Scan(&option.ID, &option.Value)
 		if err != nil {
 			return nil, err
 		}
@@ -322,4 +324,101 @@ func (o *Option) Delete(tx *sql.Tx) error {
 		return err
 	}
 	return nil
+}
+
+func (a *Attr) Insert(tx *sql.Tx) (int, error) {
+	stmt := `insert into goods_attr(attr, spu_id) values(?,?)`
+	prepare, err := dbutil.ToPrepare(tx, stmt)
+	if err != nil {
+		return -1, err
+	}
+	result, err := prepare.Exec(a.Attr, a.SpuID)
+	if err != nil {
+		return -1, err
+	}
+	id, err := result.LastInsertId()
+	if err != nil {
+		return -1, nil
+	}
+	return int(id), nil
+}
+
+func (a *Attr) QueryBySpu(tx *sql.Tx) ([]*Attr, error) {
+	stmt := `select id, attr from goods_attr where spu_id = ? and enable = true`
+	prepare, err := dbutil.ToPrepare(tx, stmt)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := prepare.Query(a.SpuID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var attrList []*Attr
+	for rows.Next() {
+		var attr Attr
+		err := rows.Scan(&attr.ID, &attr.Attr)
+		if err != nil {
+			return nil, err
+		}
+		attrList = append(attrList, &attr)
+	}
+	return attrList, nil
+}
+
+func (a *Attr) QueryIdsBySpuId(tx *sql.Tx) ([]int, error) {
+	stmt := `select id from goods_attr where spu_id = ? and enable = true`
+	prepare, err := dbutil.ToPrepare(tx, stmt)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := prepare.Query(a.SpuID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var idList []int
+	for rows.Next() {
+		var id int
+		err := rows.Scan(&id)
+		if err != nil {
+			return nil, err
+		}
+		idList = append(idList, id)
+	}
+	return idList, nil
+}
+
+func (a *Attr) DeleteBySpuId(tx *sql.Tx) error {
+	stmt := `update goods_attr set enable = false where spu_id = ?`
+	prepare, err := dbutil.ToPrepare(tx, stmt)
+	if err != nil {
+		return err
+	}
+	_, err = prepare.Exec(a.SpuID)
+	return err
+}
+
+func (o *Option) Insert(tx *sql.Tx) (int, error) {
+	stmt := `insert into goods_attr_option(attr_id, value) values(?, ?)`
+	prepare, err := dbutil.ToPrepare(tx, stmt)
+	if err != nil {
+		return -1, err
+	}
+	result, err := prepare.Exec(o.AttrId, o.Value)
+	id, err := result.LastInsertId()
+	if err != nil {
+		return -1, err
+	}
+	return int(id), nil
+}
+
+func (o *Option) DeleteByAttrId(tx *sql.Tx) error {
+	stmt := `update goods_attr_option set enable = false where attr_id = ? and enable = true`
+	prepare, err := dbutil.ToPrepare(tx, stmt)
+	if err != nil {
+		return err
+	}
+	_, err = prepare.Exec(o.AttrId)
+	return err
 }

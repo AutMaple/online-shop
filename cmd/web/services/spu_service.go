@@ -18,18 +18,19 @@ func InsertSpu(spuForm *dto.SpuForm) error {
 	}
 	// 1.插入SPU
 	spuId, err := spu.Insert(tx)
-	spu.ID = spuId
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
+	spu.ID = spuId
 	// 2.插入属性
 	var attrIds []int
 	for _, attrDto := range spuForm.Attrs {
 		attr := &models.Attr{
-			Attr: attrDto.Attr,
+			Attr:  attrDto.Attr,
+			SpuID: spuId,
 		}
-		id, err := spu.InsertAttr(tx, attr)
+		id, err := attr.Insert(tx)
 		if err != nil {
 			tx.Rollback()
 			return err
@@ -37,19 +38,16 @@ func InsertSpu(spuForm *dto.SpuForm) error {
 		attrIds = append(attrIds, id)
 	}
 
-	// 3. 建立 SPU 和 Attr 之间的关系
-	err = spu.JoinAttr(tx, attrIds)
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	// 4. 建立 Attr 与 Options 之间的关系
+	// 3. 建立 Attr 与 Options 之间的关系
 	for i := range attrIds {
-		err := spu.AttrJoinOptions(tx, attrIds[i], spuForm.Attrs[i].Options)
-		if err != nil {
-			tx.Rollback()
-			return err
+		options := spuForm.Attrs[i].Options
+		for _, option := range options {
+			o := &models.Option{Value: option, AttrId: attrIds[i]}
+			_, err := o.Insert(tx)
+			if err != nil {
+				tx.Rollback()
+				return err
+			}
 		}
 	}
 	tx.Commit()
@@ -79,22 +77,19 @@ func QuerySpu(id int) (*dto.SpuDto, error) {
 		return nil, err
 	}
 	spuDto.Category = category
-	// 4. 查询属性
-	attrIds, err := spu.QueryAttrId(nil)
+	// 4. 查询属性 attr
+	attr := &models.Attr{SpuID: id}
+	attrList, err := attr.QueryBySpu(nil)
 	if err != nil {
 		return nil, err
 	}
 	var attrDtos []*dto.AttrDto
-	for _, attrId := range attrIds {
-		attr := &models.Attr{ID: attrId}
-		err := attr.QueryById(nil)
-		if err != nil {
-			return nil, err
-		}
+	for _, attr := range attrList {
 		attrDtos = append(attrDtos, &dto.AttrDto{ID: attr.ID, Attr: attr.Attr})
 	}
 	spuDto.Attrs = attrDtos
-	// 5. 查询选项
+
+	// 5. 查询选项 option
 	for _, attrDto := range attrDtos {
 		option := &models.Option{AttrId: attrDto.ID}
 		options, err := option.QueryByAttrId(nil)
@@ -128,58 +123,43 @@ func PageQuerySpu(offset, size int) ([]*dto.SpuDto, error) {
 	return spuDtoList, err
 }
 
-// 删除应该是逻辑删除
 func DeleteSpu(spuId int) error {
-	// 1. 找到 spu
-	spu := &models.Spu{ID: spuId}
-	// 2. 找到 attr
-	attrIdList, err := spu.QueryAttrId(nil)
-	if err != nil {
-		return err
-	}
-	attr := &models.Attr{}
-	// 3. 找到 options
-	var totalOptionIds []int
-	for _, attrId := range attrIdList {
-		attr.ID = attrId
-		optionIdList, err := attr.QueryOptionIds(nil)
-		if err != nil {
-			return err
-		}
-		totalOptionIds = append(totalOptionIds, optionIdList...)
-	}
-	// TODO 4. 找到 SKU
-	// 5. 执行删除操作
 	tx, err := db.GetMysqlDB().Begin()
 	if err != nil {
 		return err
 	}
-	// 5.1 删除 spu
+	// 1. 删除 spu
+	spu := &models.Spu{ID: spuId}
 	err = spu.Delete(tx)
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
-	// 5.2 删除 attr
-	for _, attrId := range attrIdList {
-		attr.ID = attrId
-		err := attr.Delete(tx)
-		if err != nil {
-			tx.Rollback()
-			return err
-		}
+	// 2. 删除 attr
+	attr := &models.Attr{SpuID: spuId}
+	// 2.1 删除前必须先获取 attrId, 用于后续删除 option
+	attrIdList, err := attr.QueryIdsBySpuId(tx)
+	if err != nil {
+		tx.Rollback()
+		return err
 	}
-	// 5.3 删除 option
+	// 2.2 删除 attr
+	err = attr.DeleteBySpuId(tx)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	// 3. 删除 options
 	option := &models.Option{}
-	for _, optionId := range totalOptionIds {
-		option.ID = optionId
-		err := option.Delete(tx)
+	for _, attrId := range attrIdList {
+		option.AttrId = attrId
+		err := option.DeleteByAttrId(tx)
 		if err != nil {
 			tx.Rollback()
 			return err
 		}
 	}
-	// 5.4 TODO 删除 sku
+	// TODO 4. 删除 SKU
 	tx.Commit()
 	return nil
 }

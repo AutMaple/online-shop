@@ -14,17 +14,18 @@ CREATE TABLE goods_spu(
 DROP TABLE IF EXISTS goods_attr;
 CREATE TABLE goods_attr(
   id INT PRIMARY KEY AUTO_INCREMENT COMMENT 'ID',
+  spu_id INT NOT NULL COMMENT 'SPU ID',
   attr VARCHAR(255) NOT NULL COMMENT '属性名',
   enable BOOLEAN NOT NULL DEFAULT TRUE COMMENT '是否可用'
 );
 
 DROP TABLE IF EXISTS goods_spu_attr;
-CREATE TABLE goods_spu_attr(
-  id INT PRIMARY KEY AUTO_INCREMENT COMMENT 'ID',
-  spu_id INT NOT NULL COMMENT 'SPU ID',
-  attr_id INT NOT NULL COMMENT '属性 ID',
-  enable BOOLEAN NOT NULL DEFAULT TRUE COMMENT '是否可用'
-);
+-- CREATE TABLE goods_spu_attr(
+--   id INT PRIMARY KEY AUTO_INCREMENT COMMENT 'ID',
+--   spu_id INT NOT NULL COMMENT 'SPU ID',
+--   attr_id INT NOT NULL COMMENT '属性 ID',
+--   enable BOOLEAN NOT NULL DEFAULT TRUE COMMENT '是否可用'
+-- );
 
 -- 一个属性有多个值, 例如颜色: 红色，蓝色，绿色等
 DROP TABLE IF EXISTS goods_attr_option;
