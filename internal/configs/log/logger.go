@@ -14,12 +14,12 @@ func init() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	logger = zerolog.New(os.Stdout).With().
 		Timestamp().
-    CallerWithSkipFrameCount(3).
-		Stack().Logger()
+		CallerWithSkipFrameCount(3).
+		Logger()
 }
 
 func Logger() zerolog.Logger {
-  return logger
+	return logger
 }
 
 func Trace(msgTemplate string, v ...any) {
@@ -45,17 +45,17 @@ func Warn(msgTemplate string, v ...any) {
 func Error(err error, msgTemplate string, v ...any) {
 	msg := fmt.Sprintf(msgTemplate, v...)
 	logger.Error().Err(err).Msg(msg)
-  fmt.Printf("%s",debug.Stack())
+	fmt.Printf("%s", debug.Stack())
 }
 
 func Fatal(err error, msgTemplate string, v ...any) {
 	msg := fmt.Sprintf(msgTemplate, v...)
 	logger.Fatal().Err(err).Msg(msg)
-  fmt.Printf("%s",debug.Stack())
+	fmt.Printf("%s", debug.Stack())
 }
 
 func Panic(err error, msgTemplate string, v ...any) {
 	msg := fmt.Sprintf(msgTemplate, v...)
 	logger.Panic().Err(err).Msg(msg)
-  fmt.Printf("%s",debug.Stack())
+	fmt.Printf("%s", debug.Stack())
 }

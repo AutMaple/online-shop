@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"online.shop.autmaple.com/cmd/web/services"
@@ -17,6 +18,12 @@ import (
 // /spu/:id
 func QuerySpu(c *gin.Context) {
 	idStr := c.Param("id")
+	if len(strings.TrimSpace(idStr)) == 0 {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": handlerutil.MsgInvalidId,
+		})
+		return
+	}
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		log.Error(err, "")
@@ -66,6 +73,12 @@ func PageQuerySpu(c *gin.Context) {
 			return
 		}
 		handlerutil.ServerError(c, err)
+		return
+	}
+	if len(spuDtoList) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": handlerutil.MsgRecordNotFound,
+		})
 		return
 	}
 	c.JSON(http.StatusOK, spuDtoList)
