@@ -2,6 +2,7 @@ package log
 
 import (
 	"fmt"
+	"github.com/rs/zerolog/pkgerrors"
 	"os"
 	"runtime/debug"
 
@@ -12,8 +13,11 @@ var logger zerolog.Logger
 
 func init() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
+	zerolog.TimeFieldFormat = ""
 	logger = zerolog.New(os.Stdout).With().
 		Timestamp().
+		Stack().
 		CallerWithSkipFrameCount(3).
 		Logger()
 }
@@ -44,18 +48,18 @@ func Warn(msgTemplate string, v ...any) {
 
 func Error(err error, msgTemplate string, v ...any) {
 	msg := fmt.Sprintf(msgTemplate, v...)
-	logger.Error().Err(err).Msg(msg)
+	logger.Error().Stack().Err(err).Msg(msg)
 	fmt.Printf("%s", debug.Stack())
 }
 
 func Fatal(err error, msgTemplate string, v ...any) {
 	msg := fmt.Sprintf(msgTemplate, v...)
-	logger.Fatal().Err(err).Msg(msg)
+	logger.Fatal().Stack().Err(err).Msg(msg)
 	fmt.Printf("%s", debug.Stack())
 }
 
 func Panic(err error, msgTemplate string, v ...any) {
 	msg := fmt.Sprintf(msgTemplate, v...)
-	logger.Panic().Err(err).Msg(msg)
+	logger.Panic().Stack().Err(err).Msg(msg)
 	fmt.Printf("%s", debug.Stack())
 }

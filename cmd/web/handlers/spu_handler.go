@@ -87,8 +87,7 @@ func PageQuerySpu(c *gin.Context) {
 // POST /spu
 func InsertSpuHandler(c *gin.Context) {
 	var spuForm dto.SpuForm
-	err := c.Bind(&spuForm)
-	if err != nil {
+	if err := c.ShouldBind(&spuForm); err != nil {
 		log.Error(err, "")
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": http.StatusText(http.StatusUnprocessableEntity),
