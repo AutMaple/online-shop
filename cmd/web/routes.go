@@ -8,7 +8,7 @@ import (
 func RegisterRoutes(c *gin.Engine) {
 	// c.GET("/spu/:id", handlers.SingleSpu)
 	c.GET("/spu/:id", handlers.QuerySpu)
-	c.POST("/spu", handlers.InsertSpuHandler)
+	c.POST("/spu", handlers.InsertSpu)
 	// c.GET("/spu", handlers.PageSpu)
 	c.GET("/spu", handlers.PageQuerySpu)
 	// c.PUT("/spu/:id", handlers.UpdateSpuHandler)

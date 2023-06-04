@@ -25,10 +25,18 @@ type SpuForm struct {
 	Name     string      `json:"name" binding:"required,min=1"`
 	Brand    int         `json:"brand" binding:"required,min=1"`
 	Category int         `json:"category" binding:"required,min=1"`
+	Store    int         `json:"store" binding:"required,min=1"`
 	Attrs    []*AttrForm `json:"attrs" binding:"required,dive,min=1"`
 }
 
 type AttrForm struct {
-	Attr    string   `json:"attr" binding:"required,min=1"`
+	Name    string   `json:"attr" binding:"required,min=1"`
 	Options []string `json:"options" binding:"required,min=1"`
+}
+
+type StoreDto struct {
+	ID      int    `json:"id"`
+	Name    string `json:"name"`
+	Address string `json:"address"`
+	Phone   string `json:"phone"`
 }

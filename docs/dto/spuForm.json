@@ -1,7 +1,8 @@
 {
   "name": "iPhone 14",
-  "brand": "苹果",
-  "category": "手机",
+  "brand": 1,
+  "category": 1,
+  "store": 1,
   "attrs": [
     {
       "attr": "颜色",
@@ -21,7 +22,7 @@
     },
     {
       "attr": "内存",
-      "options":[
+      "options": [
         "64G",
         "128G",
         "256G",

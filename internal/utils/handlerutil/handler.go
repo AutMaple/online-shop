@@ -27,7 +27,8 @@ func ClientError(c *gin.Context, status int, err error, msg string) {
 	})
 }
 
-func RecordNotFoundError(c *gin.Context) {
+func RecordNotFoundError(c *gin.Context, err error) {
+  log.Error(err, "")
 	c.JSON(http.StatusNotFound, gin.H{
 		"message": MsgRecordNotFound,
 	})

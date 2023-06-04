@@ -15,6 +15,7 @@ func InsertSpu(spuForm *dto.SpuForm) error {
 		Name:       spuForm.Name,
 		BrandId:    spuForm.Brand,
 		CategoryId: spuForm.Category,
+		StoreId:    spuForm.Store,
 	}
 	// 1.插入SPU
 	spuId, err := spu.Insert(tx)
@@ -27,7 +28,7 @@ func InsertSpu(spuForm *dto.SpuForm) error {
 	var attrIds []int
 	for _, attrDto := range spuForm.Attrs {
 		attr := &models.Attr{
-			Attr:  attrDto.Attr,
+			Name:  attrDto.Name,
 			SpuID: spuId,
 		}
 		id, err := attr.Insert(tx)
@@ -63,6 +64,7 @@ func QuerySpu(id int) (*dto.SpuDto, error) {
 		return nil, err
 	}
 	spuDto.Name = spu.Name
+
 	// 2. 查询品牌
 	brand := &models.Brand{ID: spu.BrandId}
 	err = brand.QueryById(nil)
@@ -70,6 +72,7 @@ func QuerySpu(id int) (*dto.SpuDto, error) {
 		return nil, err
 	}
 	spuDto.Brand = brand
+
 	// 3. 查询分类
 	category := &models.Category{ID: spu.CategoryId}
 	err = category.QueryById(nil)
@@ -77,6 +80,7 @@ func QuerySpu(id int) (*dto.SpuDto, error) {
 		return nil, err
 	}
 	spuDto.Category = category
+
 	// 4. 查询属性 attr
 	attr := &models.Attr{SpuID: id}
 	attrList, err := attr.QueryBySpu(nil)
@@ -85,7 +89,7 @@ func QuerySpu(id int) (*dto.SpuDto, error) {
 	}
 	var attrDtos []*dto.AttrDto
 	for _, attr := range attrList {
-		attrDtos = append(attrDtos, &dto.AttrDto{ID: attr.ID, Attr: attr.Attr})
+		attrDtos = append(attrDtos, &dto.AttrDto{ID: attr.ID, Attr: attr.Name})
 	}
 	spuDto.Attrs = attrDtos
 
