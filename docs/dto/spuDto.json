@@ -1,0 +1,25 @@
+{
+  "id": 2,
+  "name": "iPhone 14",
+  "brand": {
+    "id": 1,
+    "name": "苹果",
+    "image": "https://iphone.image"
+  },
+  "category": {
+    "id": 1,
+    "name": "手机"
+  },
+  "attrs": [
+    {
+      "id": 1,
+      "attr": "颜色",
+      "options": [
+        {
+          "id": 1,
+          "value": "黄色"
+        }
+      ]
+    }
+  ]
+}

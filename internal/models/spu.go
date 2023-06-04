@@ -13,11 +13,6 @@ type Spu struct {
 	StoreId    int
 }
 
-type Sku struct {
-	ID    int
-	SkuId int
-}
-
 // QueryById may return the following error type: ErrNotRows
 func (s *Spu) QueryById(tx *sql.Tx) error {
 	stmt := `SELECT name, brand_id, category_id, store_id FROM goods_spu WHERE id = ? AND enable = true`
