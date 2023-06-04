@@ -15,4 +15,5 @@ func RegisterRoutes(c *gin.Engine) {
 	// sku
 	c.GET("/sku/:id", handlers.QuerySku)
 	c.POST("/sku", handlers.InsertSku)
+	c.GET("/sku", handlers.PageQuerySku)
 }

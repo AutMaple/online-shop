@@ -80,8 +80,25 @@ func QuerySku(id int) (*dto.SkuDto, error) {
 	return &skuDto, nil
 }
 
-func PageQuerySku() {
-
+func PageQuerySku(offset, size int) ([]*dto.SkuDto, error) {
+	sku := models.Sku{}
+	skus, err := sku.PageQuery(nil, offset, size)
+	if err != nil {
+		return nil, err
+	}
+	var res []*dto.SkuDto
+	for _, sku := range skus {
+		err := sku.QueryById(nil)
+		if err != nil {
+			return nil, err
+		}
+		skuDto, err := QuerySku(sku.ID)
+		if err != nil {
+			return nil, err
+		}
+		res = append(res, skuDto)
+	}
+	return res, nil
 }
 
 func UpdateSku() {

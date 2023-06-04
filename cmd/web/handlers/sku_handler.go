@@ -55,7 +55,26 @@ func QuerySku(c *gin.Context) {
 
 // PageQuerySku will handle the `GET /sku?offset=1&szie=10` request
 func PageQuerySku(c *gin.Context) {
-
+	offset, err := strconv.Atoi(c.DefaultQuery("offset", "1"))
+	if err != nil || offset <= 0{
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Invalid Param: offset",
+		})
+		return
+	}
+	size, err := strconv.Atoi(c.DefaultQuery("size", "10"))
+	if err != nil || size <= 0 {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Invalid Param: size",
+		})
+		return
+	}
+	skuDtos, err := services.PageQuerySku(offset, size)
+	if err != nil {
+		handlerutil.ServerError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, skuDtos)
 }
 
 // UpdateSku will handle the `PUT /sku/:id` request
