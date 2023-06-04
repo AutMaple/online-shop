@@ -164,6 +164,18 @@ func DeleteSpu(spuId int) error {
 		}
 	}
 	// TODO 4. 删除 SKU
+	skuIds, err := spu.QuerySkuIds(tx)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	for _, skuId := range skuIds {
+		err = DeleteSkuWithOuterTx(tx, skuId)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
 	tx.Commit()
 	return nil
 }

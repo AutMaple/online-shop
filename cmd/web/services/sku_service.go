@@ -1,6 +1,8 @@
 package services
 
 import (
+	"database/sql"
+
 	"online.shop.autmaple.com/internal/configs/db"
 	"online.shop.autmaple.com/internal/dto"
 	"online.shop.autmaple.com/internal/models"
@@ -184,5 +186,29 @@ func DeleteSku(id int) error {
 		return err
 	}
 	tx.Commit()
+	return nil
+}
+
+func DeleteSkuWithOuterTx(tx *sql.Tx, id int) error {
+	sku := &models.Sku{ID: id}
+	err := sku.QueryById(tx)
+	if err != nil {
+		return err
+	}
+	// 1. 删除 SKU
+	err = sku.Delete(tx)
+	if err != nil {
+		return err
+	}
+	// 2. 删除属性表
+	err = sku.DeleteAttrs(tx)
+	if err != nil {
+		return err
+	}
+	// 3. 删除规格表
+	err = sku.DeleteSpecification(tx)
+	if err != nil {
+		return err
+	}
 	return nil
 }
