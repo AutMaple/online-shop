@@ -13,5 +13,6 @@ func RegisterRoutes(c *gin.Engine) {
 	c.DELETE("/spu/:id", handlers.DeleteSpu)
 
 	// sku
+	c.GET("/sku/:id", handlers.QuerySku)
 	c.POST("/sku", handlers.InsertSku)
 }

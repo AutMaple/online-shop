@@ -46,8 +46,38 @@ func InsertSku(skuForm *dto.SkuForm) error {
 	return nil
 }
 
-func QuerySku() {
+func QuerySku(id int) (*dto.SkuDto, error) {
+	// 1. 查询 sku 的基本信息
+	var skuDto dto.SkuDto
+	sku := &models.Sku{ID: id}
+	err := sku.QueryById(nil)
+	if err != nil {
+		return nil, err
+	}
+	// 2. 查询 sku 的名字
+	spu := &models.Spu{ID: sku.SpuId}
+	err = spu.QueryById(nil)
+	if err != nil {
+		return nil, err
+	}
 
+	// 3. 查询 sku 的属性
+	attrs, err := sku.QueryAttrs(nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// 4. 查询 sku 的规格
+	specifications, err := sku.QuerySpecifications(nil)
+	if err != nil {
+		return nil, err
+	}
+	skuDto.ID = sku.ID
+	skuDto.Stock = sku.Stock
+	skuDto.Name = spu.Name
+	skuDto.Attrs = attrs
+	skuDto.Specifications = specifications
+	return &skuDto, nil
 }
 
 func PageQuerySku() {

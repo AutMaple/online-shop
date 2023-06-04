@@ -13,6 +13,15 @@ type SkuForm struct {
 	Specifications map[string]map[string]string `json:"specifications" binding:"required,specifications"`
 }
 
+type SkuDto struct {
+	ID             int                          `json:"id"`
+	Name           string                       `json:"name"`
+	Stock          int                          `json:"stock"`
+	Attrs          map[string]string            `json:"attrs"`
+	Specifications map[string]map[string]string `json:"specifications"`
+}
+
+// SpecificationValidator require the key and the value of specification not empty
 func SpecificationValidator(fl validator.FieldLevel) bool {
 	specificationGroups, ok := fl.Field().Interface().(map[string]map[string]string)
 	if ok {
