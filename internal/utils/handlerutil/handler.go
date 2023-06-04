@@ -20,15 +20,10 @@ func ServerError(c *gin.Context, err error) {
 	})
 }
 
-func ClientError(c *gin.Context, status int, err error, msg string) {
-	log.Error(err, "")
-	c.JSON(status, gin.H{
-		"message": msg,
-	})
-}
-
 func RecordNotFoundError(c *gin.Context, err error) {
-  log.Error(err, "")
+  if err != nil {
+	  log.Warn(err.Error())
+  }
 	c.JSON(http.StatusNotFound, gin.H{
 		"message": MsgRecordNotFound,
 	})

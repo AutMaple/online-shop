@@ -101,10 +101,88 @@ func PageQuerySku(offset, size int) ([]*dto.SkuDto, error) {
 	return res, nil
 }
 
-func UpdateSku() {
-
+func UpdateSku(id int, skuForm *dto.SkuForm) error {
+	tx, err := db.GetMysqlDB().Begin()
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	sku := &models.Sku{ID: id}
+	err = sku.QueryById(tx)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	// 1. 删除
+	// 1.1 删除属性 attr
+	err = sku.DeleteAttrs(tx)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	// 1.2 删除规格值
+	err = sku.DeleteSpecification(tx)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	// 2. 更新
+	// 2.1 插入属性
+	err = sku.InsertAttrOption(tx, skuForm.Attrs)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	// 2.2 插入规格值
+	for group, specifications := range skuForm.Specifications {
+		groupId, err := sku.InsertSpecificationGroup(tx, group)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+		for name, value := range specifications {
+			err := sku.InsertSpecification(tx, groupId, name, value)
+			if err != nil {
+				tx.Rollback()
+				return err
+			}
+		}
+	}
+	tx.Commit()
+	return nil
 }
 
-func DeleteSku() {
+func DeleteSku(id int) error {
+	tx, err := db.GetMysqlDB().Begin()
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
 
+	sku := &models.Sku{ID: id}
+	err = sku.QueryById(tx)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	// 1. 删除 SKU
+	err = sku.Delete(tx)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	// 2. 删除属性表
+	err = sku.DeleteAttrs(tx)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	// 3. 删除规格表
+	err = sku.DeleteSpecification(tx)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	tx.Commit()
+	return nil
 }

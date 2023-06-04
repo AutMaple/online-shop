@@ -7,7 +7,7 @@ import (
 )
 
 func RegisterValidator() {
-  if v,ok := binding.Validator.Engine().(*validator.Validate); ok {
-    v.RegisterValidation("specifications", dto.SpecificationValidator)
-  }
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("specifications", dto.SpecificationValidator)
+	}
 }

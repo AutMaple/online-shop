@@ -31,7 +31,7 @@ func (s *Spu) QueryById(tx *sql.Tx) error {
 
 func (s *Spu) PageQuery(tx *sql.Tx, offset, size int) ([]*Spu, error) {
 	stmt := `SELECT id, name, brand_id, category_id FROM goods_spu
-  WHERE id >= (SELECT id FROM goods_spu ORDER BY id LIMIT ?, 1) AND enable = true
+  WHERE id >= (SELECT id FROM goods_spu WHERE enable = true ORDER BY id LIMIT ?, 1) AND enable = true
   ORDER BY id LIMIT ?`
 	prepare, err := dbutil.ToPrepare(tx, stmt)
 	if err != nil {

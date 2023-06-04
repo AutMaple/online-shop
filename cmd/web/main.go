@@ -13,6 +13,6 @@ func main() {
 	r.Static("/static", "./ui/static")
 	r.LoadHTMLGlob("ui/templates/*")
 	RegisterRoutes(r)
-  RegisterValidator()
+	RegisterValidator()
 	r.Run(":8080")
 }
