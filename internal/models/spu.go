@@ -94,3 +94,25 @@ func (s *Spu) Delete(tx *sql.Tx) error {
 	}
 	return nil
 }
+
+func (s *Spu) QuerySkuIds(tx *sql.Tx) ([]int, error) {
+	stmt := `SELECT id FROM goods_sku WHERE spu_id = ?`
+	prepare, err := dbutil.ToPrepare(tx, stmt)
+	if err != nil {
+		return nil, DetailError(err)
+	}
+	rows, err := prepare.Query(s.ID)
+	if err != nil {
+		return nil, DetailError(err)
+	}
+	var skuIds []int
+	for rows.Next() {
+		var skuId int
+		err := rows.Scan(&skuId)
+		if err != nil {
+			return nil, DetailError(err)
+		}
+		skuIds = append(skuIds, skuId)
+	}
+	return skuIds, nil
+}

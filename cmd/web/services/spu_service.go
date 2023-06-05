@@ -163,7 +163,7 @@ func DeleteSpu(spuId int) error {
 			return err
 		}
 	}
-	// TODO 4. 删除 SKU
+	// 4. 删除 SKU
 	skuIds, err := spu.QuerySkuIds(tx)
 	if err != nil {
 		tx.Rollback()

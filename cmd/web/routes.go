@@ -18,4 +18,11 @@ func RegisterRoutes(c *gin.Engine) {
 	c.GET("/sku", handlers.PageQuerySku)
 	c.PUT("/sku/:id", handlers.UpdateSku)
 	c.DELETE("/sku/:id", handlers.DeleteSku)
+
+	// brand
+	c.GET("/brand/:id", handlers.QueryBrand)
+	c.POST("/brand", handlers.InsertBrand)
+	c.GET("/brand", handlers.PageQueryBrand)
+	c.PUT("/brand/:id", handlers.UpdateBrand)
+	c.DELETE("/brand/:id", handlers.DeleteBrand)
 }
