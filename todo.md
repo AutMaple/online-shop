@@ -1,6 +1,6 @@
 - [x] spu 的增删改查
 - [x] sku 的增删改查
-- [ ] brand 的增删改查
+- [x] brand 的增删改查
 - [ ] category 的增删改查
 - [ ] store 的增删改查
 - [ ] 用户注册功能
