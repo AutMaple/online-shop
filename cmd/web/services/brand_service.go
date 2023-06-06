@@ -50,33 +50,23 @@ func PageQueryBrand(offset, size int) ([]*dto.BrandDto, error) {
 }
 
 func UpdateBrand(id int, brandForm *dto.BrandForm) error {
-	tx, err := db.GetMysqlDB().Begin()
 	brand := *&models.Brand{
 		ID:    id,
 		Name:  brandForm.Name,
 		Image: brandForm.Image,
 	}
+	err := brand.Update(nil)
 	if err != nil {
 		return err
 	}
-	err = brand.Update(tx)
-	if err != nil {
-		return err
-	}
-	tx.Commit()
 	return nil
 }
 
 func DeleteBrand(id int) error {
-	tx, err := db.GetMysqlDB().Begin()
-	if err != nil {
-		return err
-	}
 	brand := &models.Brand{ID: id}
-	err = brand.Delete(tx)
+	err := brand.Delete(nil)
 	if err != nil {
 		return err
 	}
-	tx.Commit()
 	return nil
 }

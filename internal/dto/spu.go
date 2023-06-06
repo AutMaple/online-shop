@@ -34,9 +34,3 @@ type AttrForm struct {
 	Options []string `json:"options" binding:"required,min=1"`
 }
 
-type StoreDto struct {
-	ID      int    `json:"id"`
-	Name    string `json:"name"`
-	Address string `json:"address"`
-	Phone   string `json:"phone"`
-}

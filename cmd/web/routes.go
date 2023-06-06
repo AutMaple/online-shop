@@ -32,4 +32,11 @@ func RegisterRoutes(c *gin.Engine) {
 	c.GET("/category", handlers.PageQueryCategory)
 	c.PUT("/category/:id", handlers.UpdateCategory)
 	c.DELETE("/category/:id", handlers.DeleteCategory)
+
+	// store
+	c.GET("/store/:id", handlers.QueryStore)
+	c.POST("/store", handlers.InsertStore)
+	c.GET("/store", handlers.PageQueryStore)
+	c.PUT("/store/:id", handlers.UpdateStore)
+	c.DELETE("/store/:id", handlers.DeleteStore)
 }

@@ -22,16 +22,16 @@ func (s *Store) QueryById(tx *sql.Tx) error {
 		return DetailError(err)
 	}
 	row := prepare.QueryRow(s.ID)
-  err = row.Scan(&s.BrandIds, &s.Name, &s.Address, &s.Phone);
-  if err != nil {
-    return DetailError(err)
-  }
-  return nil
+	err = row.Scan(&s.BrandIds, &s.Name, &s.Address, &s.Phone)
+	if err != nil {
+		return DetailError(err)
+	}
+	return nil
 }
 
 func (s *Store) PageQuery(tx *sql.Tx, offset, size int) ([]*Store, error) {
 	stmt := `SELECT id,brand_ids,name,address,phone FROM goods_store
-  WHERE id >= (SELECT id FROM goods_store ORDER BY id LIMIT ?, 1) AND enable = true
+  WHERE id >= (SELECT id FROM goods_store WHERE enable = true ORDER BY id LIMIT ?, 1) AND enable = true
   ORDER BY id LIMIT ?`
 	prepare, err := dbutil.ToPrepare(tx, stmt)
 	if err != nil {
@@ -56,27 +56,28 @@ func (s *Store) PageQuery(tx *sql.Tx, offset, size int) ([]*Store, error) {
 	return res, nil
 }
 
-func (s *Store) Insert(tx *sql.Tx) (int, error) {
+func (s *Store) Insert(tx *sql.Tx) error {
 	stmt := `INSERT INTO goods_store(brand_ids,name,address,phone) VALUES(?,?,?,?)`
 	prepare, err := dbutil.ToPrepare(tx, stmt)
 	if err != nil {
-		return -1, DetailError(err)
+		return DetailError(err)
 	}
 	defer prepare.Close()
 	result, err := prepare.Exec(s.BrandIds, s.Name, s.Address, s.Phone)
 	if err != nil {
-		return -1, DetailError(err)
+		return DetailError(err)
 	}
 	id, err := result.LastInsertId()
 	if err != nil {
-		return -1, DetailError(err)
+		return DetailError(err)
 	}
-	return int(id), nil
+	s.ID = int(id)
+	return nil
 }
 
 // Delete return ErrRecordNotFound error if no rows affected
 func (s *Store) Delete(tx *sql.Tx) error {
-	stmt := `UPDATE goods_store SET enable = false WHERE id = ? and enable = true`
+	stmt := `UPDATE goods_store SET enable = false WHERE id = ?`
 	prepare, err := dbutil.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
@@ -90,7 +91,27 @@ func (s *Store) Delete(tx *sql.Tx) error {
 		return DetailError(err)
 	}
 	if affected == 0 {
-		return DetailError(ErrRecordNotFound)
+		return DetailError(sql.ErrNoRows)
+	}
+	return nil
+}
+
+func (s *Store) Update(tx *sql.Tx) error {
+	stmt := `UPDATE goods_store SET brand_ids = ?, name = ?, address = ?, phone = ? WHERE id = ?`
+	prepare, err := dbutil.ToPrepare(tx, stmt)
+	if err != nil {
+		return DetailError(err)
+	}
+	result, err := prepare.Exec(s.BrandIds, s.Name, s.Address, s.Phone, s.ID)
+	if err != nil {
+		return DetailError(err)
+	}
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return DetailError(err)
+	}
+	if affected == 0 {
+		return sql.ErrNoRows
 	}
 	return nil
 }
