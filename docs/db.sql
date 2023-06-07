@@ -106,3 +106,12 @@ CREATE TABLE goods_sku_specification
     value         VARCHAR(255) NOT NULL COMMENT '规格值',
     enable        BOOLEAN      NOT NULL DEFAULT TRUE COMMENT '是否可用'
 );
+
+DROP TABLE IF EXISTS ums_user;
+CREATE TABLE ums_user(
+  id INT PRIMARY KEY AUTO_INCREMENT COMMENT 'ID',
+  name VARCHAR(255) NOT NULL COMMENT '用户名',
+  email VARCHAR(255) NOT NULL COMMENT '邮箱',
+  phone VARCHAR(255) NOT NULL COMMENT '手机号',
+  enable BOOLEAN NOT NULL DEFAULT TRUE COMMENT '是否可用'
+)
