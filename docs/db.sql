@@ -115,5 +115,10 @@ CREATE TABLE ums_user
     name   VARCHAR(255) NOT NULL COMMENT '用户名',
     email  VARCHAR(255) NOT NULL COMMENT '邮箱',
     phone  VARCHAR(255) NOT NULL COMMENT '手机号',
+    password VARCHAR(255) NOT NULL COMMENT '密码',
+    avatar VARCHAR(255) NOT NULL COMMENT '头像',
+    login_time DATETIME NOT NULL COMMENT '登录时间',
+    create_time DATETIME NOT NULL COMMENT '创建时间',
+    update_time DATETIME NOT NULL COMMENT '更新时间',
     enable BOOLEAN      NOT NULL DEFAULT TRUE COMMENT '是否可用'
 )
