@@ -14,7 +14,7 @@ type User struct {
 }
 
 func (u *User) QueryById(tx *sql.Tx) error {
-	stmt := `SELECT name, email, phone FROM ums_user WHERE id = ?`
+	stmt := `SELECT name, email, phone FROM ums_user WHERE id = ? and enable = true`
 	prepare, err := dbutil.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)

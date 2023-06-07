@@ -9,54 +9,48 @@ import (
 	"github.com/gin-gonic/gin"
 	"online.shop.autmaple.com/cmd/web/services"
 	"online.shop.autmaple.com/internal/dto"
-	"online.shop.autmaple.com/internal/utils/handlerutil"
+	"online.shop.autmaple.com/internal/utils/response"
 )
 
 // QueryBrand will handle `GET /brand/:id` request
 func QueryBrand(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": handlerutil.MsgInvalidId,
-		})
+		response.InvalidParam(c, "id")
 		return
 	}
 	brandDto, err := services.QueryBrand(id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			handlerutil.RecordNotFoundError(c, err)
+			response.NotFound(c)
 			return
 		}
-		handlerutil.ServerError(c, err)
+		response.ServerError(c)
 		return
 	}
-	c.JSON(http.StatusOK, brandDto)
+	response.Ok(c, brandDto)
 }
 
 // PageQueryBrand will handle `GET /brand?offset=1&size=10` request
 func PageQueryBrand(c *gin.Context) {
 	offset, err := strconv.Atoi(c.Query("offset"))
 	if err != nil || offset == 0 {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Invalid Param: offset",
-		})
+		response.InvalidParam(c, "offset")
 		return
 	}
 	size, err := strconv.Atoi(c.Query("size"))
 	if err != nil || size == 0 {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Invalid Param: size",
-		})
+		response.InvalidParam(c, "size")
 		return
 	}
 
 	brandDtos, err := services.PageQueryBrand(offset, size)
 	if err != nil {
-		handlerutil.ServerError(c, err)
+		response.ServerError(c)
 		return
 	}
 	if len(brandDtos) == 0 {
-		handlerutil.RecordNotFoundError(c, err)
+		response.NotFound(c)
 		return
 	}
 	c.JSON(http.StatusOK, brandDtos)
@@ -67,71 +61,57 @@ func InsertBrand(c *gin.Context) {
 	var brandForm dto.BrandForm
 	err := c.ShouldBindJSON(&brandForm)
 	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": http.StatusText(http.StatusUnprocessableEntity),
-		})
+		response.UnprocessableEntiy(c)
 		return
 	}
 	err = services.InsertBrand(&brandForm)
 	if err != nil {
-		handlerutil.ServerError(c, err)
+		response.ServerError(c)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Insert Successful",
-	})
+	response.OkWithMessage(c, "Insert Successful")
 }
 
 // UpdateBrand will handle `PUT /brand/:id` request
 func UpdateBrand(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": handlerutil.MsgInvalidId,
-		})
+		response.InvalidParam(c, "id")
 		return
 	}
 	var brandForm dto.BrandForm
 	err = c.ShouldBindJSON(&brandForm)
 	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": http.StatusText(http.StatusUnprocessableEntity),
-		})
+		response.UnprocessableEntiy(c)
 		return
 	}
 	err = services.UpdateBrand(id, &brandForm)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			handlerutil.RecordNotFoundError(c, err)
+			response.NotFound(c)
 			return
 		}
-		handlerutil.ServerError(c, err)
+		response.ServerError(c)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Update Successful",
-	})
+	response.OkWithMessage(c, "Update Successful")
 }
 
 // DeleteBrand will handle `DELETE /brand/:id` request
 func DeleteBrand(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": handlerutil.MsgInvalidId,
-		})
+		response.InvalidParam(c, "id")
 		return
 	}
 	err = services.DeleteBrand(id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			handlerutil.RecordNotFoundError(c, err)
+			response.NotFound(c)
 			return
 		}
-		handlerutil.ServerError(c, err)
+		response.ServerError(c)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Delete Successful",
-	})
+	response.OkWithMessage(c, "Delete Successful")
 }

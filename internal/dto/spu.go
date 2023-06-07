@@ -33,4 +33,3 @@ type AttrForm struct {
 	Name    string   `json:"attr" binding:"required,min=1"`
 	Options []string `json:"options" binding:"required,min=1"`
 }
-

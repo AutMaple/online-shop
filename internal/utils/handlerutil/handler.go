@@ -21,9 +21,9 @@ func ServerError(c *gin.Context, err error) {
 }
 
 func RecordNotFoundError(c *gin.Context, err error) {
-  if err != nil {
-	  log.Warn(err.Error())
-  }
+	if err != nil {
+		log.Warn(err.Error())
+	}
 	c.JSON(http.StatusNotFound, gin.H{
 		"message": MsgRecordNotFound,
 	})

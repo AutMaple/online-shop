@@ -37,7 +37,8 @@ CREATE TABLE goods_store
     enable    BOOLEAN      NOT NULL DEFAULT TRUE COMMENT '是否可用'
 );
 
-INSERT INTO goods_store(brand_ids, name, address, phone) VALUES('1', '苹果官方旗舰店', '湖南郴州', '8888-8888');
+INSERT INTO goods_store(brand_ids, name, address, phone)
+VALUES ('1', '苹果官方旗舰店', '湖南郴州', '8888-8888');
 
 DROP TABLE IF EXISTS goods_spu;
 CREATE TABLE goods_spu
@@ -108,10 +109,11 @@ CREATE TABLE goods_sku_specification
 );
 
 DROP TABLE IF EXISTS ums_user;
-CREATE TABLE ums_user(
-  id INT PRIMARY KEY AUTO_INCREMENT COMMENT 'ID',
-  name VARCHAR(255) NOT NULL COMMENT '用户名',
-  email VARCHAR(255) NOT NULL COMMENT '邮箱',
-  phone VARCHAR(255) NOT NULL COMMENT '手机号',
-  enable BOOLEAN NOT NULL DEFAULT TRUE COMMENT '是否可用'
+CREATE TABLE ums_user
+(
+    id     INT PRIMARY KEY AUTO_INCREMENT COMMENT 'ID',
+    name   VARCHAR(255) NOT NULL COMMENT '用户名',
+    email  VARCHAR(255) NOT NULL COMMENT '邮箱',
+    phone  VARCHAR(255) NOT NULL COMMENT '手机号',
+    enable BOOLEAN      NOT NULL DEFAULT TRUE COMMENT '是否可用'
 )

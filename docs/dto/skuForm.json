@@ -1,7 +1,12 @@
 {
   "spu": 1,
   "stock": 20,
-  "attrs": [1,2,3,4],
+  "attrs": [
+    1,
+    2,
+    3,
+    4
+  ],
   "specifications": {
     "主体": {
       "机型": "Apple iPhone13",
