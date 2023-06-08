@@ -1,12 +1,44 @@
-package services
+package spu
 
 import (
+	"online.shop.autmaple.com/cmd/web/service/sku"
 	"online.shop.autmaple.com/internal/configs/db"
-	"online.shop.autmaple.com/internal/dto"
 	"online.shop.autmaple.com/internal/models"
 )
 
-func InsertSpu(spuForm *dto.SpuForm) error {
+type Dto struct {
+	ID       int              `json:"id"`
+	Name     string           `json:"name"`
+	Brand    *models.Brand    `json:"brand"`
+	Category *models.Category `json:"category"`
+	Attrs    []*AttrDto       `json:"attrs"`
+}
+
+type Form struct {
+	Name     string      `json:"name" binding:"required,min=1"`
+	Brand    int         `json:"brand" binding:"required,min=1"`
+	Category int         `json:"category" binding:"required,min=1"`
+	Store    int         `json:"store" binding:"required,min=1"`
+	Attrs    []*AttrForm `json:"attrs" binding:"required,dive,min=1"`
+}
+
+type AttrDto struct {
+	ID      int          `json:"id"`
+	Attr    string       `json:"attr"`
+	Options []*OptionDto `json:"options"`
+}
+
+type AttrForm struct {
+	Name    string   `json:"attr" binding:"required,min=1"`
+	Options []string `json:"options" binding:"required,min=1"`
+}
+
+type OptionDto struct {
+	ID    int    `json:"id"`
+	Value string `json:"value"`
+}
+
+func InsertSpu(spuForm *Form) error {
 	tx, err := db.GetMysqlDB().Begin()
 	if err != nil {
 		return err
@@ -55,9 +87,9 @@ func InsertSpu(spuForm *dto.SpuForm) error {
 	return nil
 }
 
-func QuerySpu(id int) (*dto.SpuDto, error) {
+func QuerySpu(id int) (*Dto, error) {
 	// 1. 查询 spu 的属性
-	spuDto := *&dto.SpuDto{ID: id}
+	spuDto := &Dto{ID: id}
 	spu := models.Spu{ID: id}
 	err := spu.QueryById(nil)
 	if err != nil {
@@ -87,9 +119,9 @@ func QuerySpu(id int) (*dto.SpuDto, error) {
 	if err != nil {
 		return nil, err
 	}
-	var attrDtos []*dto.AttrDto
+	var attrDtos []*AttrDto
 	for _, attr := range attrList {
-		attrDtos = append(attrDtos, &dto.AttrDto{ID: attr.ID, Attr: attr.Name})
+		attrDtos = append(attrDtos, &AttrDto{ID: attr.ID, Attr: attr.Name})
 	}
 	spuDto.Attrs = attrDtos
 
@@ -100,23 +132,23 @@ func QuerySpu(id int) (*dto.SpuDto, error) {
 		if err != nil {
 			return nil, err
 		}
-		var optionsDto []*dto.OptionDto
+		var optionsDto []*OptionDto
 		for _, o := range options {
-			dto := &dto.OptionDto{ID: o.ID, Value: o.Value}
+			dto := &OptionDto{ID: o.ID, Value: o.Value}
 			optionsDto = append(optionsDto, dto)
 		}
 		attrDto.Options = optionsDto
 	}
-	return &spuDto, nil
+	return spuDto, nil
 }
 
-func PageQuerySpu(offset, size int) ([]*dto.SpuDto, error) {
+func PageQuerySpu(offset, size int) ([]*Dto, error) {
 	spu := models.Spu{}
 	spuList, err := spu.PageQuery(nil, offset, size)
 	if err != nil {
 		return nil, err
 	}
-	var spuDtoList []*dto.SpuDto
+	var spuDtoList []*Dto
 	for _, spu := range spuList {
 		spuDto, err := QuerySpu(spu.ID)
 		if err != nil {
@@ -170,7 +202,7 @@ func DeleteSpu(spuId int) error {
 		return err
 	}
 	for _, skuId := range skuIds {
-		err = DeleteSkuWithOuterTx(tx, skuId)
+		err = sku.DeleteSkuWithOuterTx(tx, skuId)
 		if err != nil {
 			tx.Rollback()
 			return err

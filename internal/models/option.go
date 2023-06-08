@@ -3,7 +3,7 @@ package models
 import (
 	"database/sql"
 
-	"online.shop.autmaple.com/internal/utils/dbutil"
+	"online.shop.autmaple.com/internal/db"
 )
 
 type Option struct {
@@ -14,7 +14,7 @@ type Option struct {
 
 func (o *Option) QueryByAttrId(tx *sql.Tx) ([]*Option, error) {
 	stmt := `select id, value from goods_attr_option where attr_id = ?`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return nil, DetailError(err)
 	}
@@ -37,7 +37,7 @@ func (o *Option) QueryByAttrId(tx *sql.Tx) ([]*Option, error) {
 
 func (o *Option) Insert(tx *sql.Tx) (int, error) {
 	stmt := `insert into goods_attr_option(attr_id, value) values(?, ?)`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return -1, DetailError(err)
 	}
@@ -51,7 +51,7 @@ func (o *Option) Insert(tx *sql.Tx) (int, error) {
 
 func (o *Option) DeleteByAttrId(tx *sql.Tx) error {
 	stmt := `update goods_attr_option set enable = false where attr_id = ? and enable = true`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}

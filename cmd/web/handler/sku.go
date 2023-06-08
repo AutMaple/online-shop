@@ -1,4 +1,4 @@
-package handlers
+package handler
 
 import (
 	"database/sql"
@@ -6,20 +6,19 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"online.shop.autmaple.com/cmd/web/services"
-	"online.shop.autmaple.com/internal/dto"
-	"online.shop.autmaple.com/internal/utils/response"
+	"online.shop.autmaple.com/cmd/web/service/sku"
+	"online.shop.autmaple.com/internal/response"
 )
 
 // InsertSku will handle the `POST /sku` request
 func InsertSku(c *gin.Context) {
-	var skuForm dto.SkuForm
+	var skuForm sku.Form
 	err := c.ShouldBindJSON(&skuForm)
 	if err != nil {
 		response.UnprocessableEntiy(c)
 		return
 	}
-	err = services.InsertSku(&skuForm)
+	err = sku.InsertSku(&skuForm)
 	if err != nil {
 		response.ServerError(c)
 		return
@@ -34,7 +33,7 @@ func QuerySku(c *gin.Context) {
 		response.InvalidParam(c, "id")
 		return
 	}
-	skuDto, err := services.QuerySku(id)
+	skuDto, err := sku.QuerySku(id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			response.NotFound(c)
@@ -58,7 +57,7 @@ func PageQuerySku(c *gin.Context) {
 		response.InvalidParam(c, "size")
 		return
 	}
-	skuDtos, err := services.PageQuerySku(offset, size)
+	skuDtos, err := sku.PageQuerySku(offset, size)
 	if err != nil {
 		response.ServerError(c)
 		return
@@ -77,12 +76,12 @@ func UpdateSku(c *gin.Context) {
 		response.InvalidParam(c, "id")
 		return
 	}
-	var skuForm dto.SkuForm
+	var skuForm sku.Form
 	if err := c.ShouldBindJSON(&skuForm); err != nil {
 		response.UnprocessableEntiy(c)
 		return
 	}
-	err = services.UpdateSku(id, &skuForm)
+	err = sku.UpdateSku(id, &skuForm)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			response.NotFound(c)
@@ -101,7 +100,7 @@ func DeleteSku(c *gin.Context) {
 		response.InvalidParam(c, "id")
 		return
 	}
-	err = services.DeleteSku(id)
+	err = sku.DeleteSku(id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			response.NotFound(c)

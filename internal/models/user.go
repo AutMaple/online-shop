@@ -3,7 +3,7 @@ package models
 import (
 	"database/sql"
 
-	"online.shop.autmaple.com/internal/utils/dbutil"
+	"online.shop.autmaple.com/internal/db"
 )
 
 type User struct {
@@ -15,7 +15,7 @@ type User struct {
 
 func (u *User) QueryById(tx *sql.Tx) error {
 	stmt := `SELECT name, email, phone FROM ums_user WHERE id = ? and enable = true`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}
@@ -32,7 +32,7 @@ func (u *User) PageQuery(tx *sql.Tx, offset, size int) ([]*User, error) {
   SELECT id, name, email, phone FROM ums_user 
   WHERE id >= (SELECT id FROM ums_user WHERE enable = true ORDER BY id LIMIT ?,1) 
   AND enable = true ORDER BY id LIMIT ?`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return nil, DetailError(err)
 	}
@@ -55,7 +55,7 @@ func (u *User) PageQuery(tx *sql.Tx, offset, size int) ([]*User, error) {
 
 func (u *User) Insert(tx *sql.Tx) error {
 	stmt := `insert into ums_user(name, email, phone) values(?,?,?)`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}
@@ -73,7 +73,7 @@ func (u *User) Insert(tx *sql.Tx) error {
 
 func (u *User) Update(tx *sql.Tx) error {
 	stmt := `update ums_user set name = ?, email = ?, phone = ? where id = ?`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}
@@ -93,7 +93,7 @@ func (u *User) Update(tx *sql.Tx) error {
 
 func (u *User) Delete(tx *sql.Tx) error {
 	stmt := `update ums_user set enable = false where id = ?`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}

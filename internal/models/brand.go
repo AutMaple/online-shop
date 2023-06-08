@@ -3,7 +3,7 @@ package models
 import (
 	"database/sql"
 
-	"online.shop.autmaple.com/internal/utils/dbutil"
+	"online.shop.autmaple.com/internal/db"
 )
 
 type Brand struct {
@@ -14,7 +14,7 @@ type Brand struct {
 
 func (b *Brand) QueryById(tx *sql.Tx) error {
 	stmt := `select name, image from goods_brand where id = ?`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}
@@ -31,7 +31,7 @@ func (b *Brand) PageQuery(tx *sql.Tx, offset, size int) ([]*Brand, error) {
   SELECT id, name, image FROM goods_brand 
   WHERE id >= (SELECT id FROM goods_brand WHERE enable = true ORDER BY id LIMIT ?,1)
   AND enable = true ORDER BY id LIMIT ?`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return nil, DetailError(err)
 	}
@@ -51,7 +51,7 @@ func (b *Brand) PageQuery(tx *sql.Tx, offset, size int) ([]*Brand, error) {
 
 func (b *Brand) Insert(tx *sql.Tx) error {
 	stmt := `insert into goods_brand(name, image) values(?,?)`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}
@@ -69,7 +69,7 @@ func (b *Brand) Insert(tx *sql.Tx) error {
 
 func (b *Brand) Update(tx *sql.Tx) error {
 	stmt := `update goods_brand set name = ?, image = ? where id = ?`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}
@@ -89,7 +89,7 @@ func (b *Brand) Update(tx *sql.Tx) error {
 
 func (b *Brand) Delete(tx *sql.Tx) error {
 	stmt := `update goods_brand set enable = false where id = ?`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}

@@ -1,4 +1,4 @@
-package handlers
+package handler
 
 import (
 	"database/sql"
@@ -6,19 +6,18 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"online.shop.autmaple.com/cmd/web/services"
-	"online.shop.autmaple.com/internal/dto"
-	"online.shop.autmaple.com/internal/utils/response"
+	"online.shop.autmaple.com/cmd/web/service/category"
+	"online.shop.autmaple.com/internal/response"
 )
 
-// QueryStore will handle `GET /store/:id` request
-func QueryStore(c *gin.Context) {
+// QueryCategory will handle `GET /category/:id` request
+func QueryCategory(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil || id <= 0 {
 		response.InvalidParam(c, "id")
 		return
 	}
-	store, err := services.QueryStore(id)
+	categoryDto, err := category.QueryCategory(id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			response.NotFound(c)
@@ -27,42 +26,42 @@ func QueryStore(c *gin.Context) {
 		response.ServerError(c)
 		return
 	}
-	response.Ok(c, store)
+	response.Ok(c, categoryDto)
 }
 
-// PageQueryStore will handle `GET /store?offset=1&size=10` request
-func PageQueryStore(c *gin.Context) {
+// PageQueryCategory will handle `GET /category?offset=1&size=10`
+func PageQueryCategory(c *gin.Context) {
 	offset, err := strconv.Atoi(c.DefaultQuery("offset", "1"))
-	if err != nil {
+	if err != nil || offset <= 0 {
 		response.InvalidParam(c, "offset")
 		return
 	}
 	size, err := strconv.Atoi(c.DefaultQuery("size", "10"))
-	if err != nil {
+	if err != nil || size <= 0 {
 		response.InvalidParam(c, "size")
 		return
 	}
-	stores, err := services.PageQueryStore(offset, size)
+	categorys, err := category.PageQueryCategory(offset, size)
 	if err != nil {
 		response.ServerError(c)
 		return
 	}
-	if len(stores) == 0 {
+	if len(categorys) == 0 {
 		response.NotFound(c)
 		return
 	}
-	response.Ok(c, stores)
+	response.Ok(c, categorys)
 }
 
-// InsertStore will handle `POST /store` request
-func InsertStore(c *gin.Context) {
-	var store dto.StoreForm
-	err := c.ShouldBindJSON(&store)
+// InsertCategory will hanle `POST /category` request
+func InsertCategory(c *gin.Context) {
+	var categoryForm category.Form
+	err := c.ShouldBindJSON(&categoryForm)
 	if err != nil {
 		response.UnprocessableEntiy(c)
 		return
 	}
-	err = services.InsertStore(&store)
+	err = category.InsertCategory(&categoryForm)
 	if err != nil {
 		response.ServerError(c)
 		return
@@ -70,23 +69,23 @@ func InsertStore(c *gin.Context) {
 	response.OkWithMessage(c, "Insert Successful")
 }
 
-// UpdateStore will handle `PUT /store/:id` request
-func UpdateStore(c *gin.Context) {
+// UpdateCategory will handle `PUT /category/:id` request
+func UpdateCategory(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil || id <= 0 {
+	if err != nil {
 		response.InvalidParam(c, "id")
 		return
 	}
-	var store dto.StoreForm
-	err = c.ShouldBindJSON(&store)
+	var categoryForm category.Form
+	err = c.ShouldBindJSON(&categoryForm)
 	if err != nil {
 		response.UnprocessableEntiy(c)
 		return
 	}
-	err = services.UpdateStore(id, &store)
+	err = category.UpdateCategory(id, &categoryForm)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			response.ServerError(c)
+			response.NotFound(c)
 			return
 		}
 		response.ServerError(c)
@@ -95,14 +94,14 @@ func UpdateStore(c *gin.Context) {
 	response.OkWithMessage(c, "Update Successful")
 }
 
-// DeleteStore will handle `DELETE /store/:id` request
-func DeleteStore(c *gin.Context) {
+// DeleteCategory will handle `DELETE /category/:id` request
+func DeleteCategory(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil || id <= 0 {
+	if err != nil {
 		response.InvalidParam(c, "id")
 		return
 	}
-	err = services.DeleteStore(id)
+	err = category.DeleteCategory(id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			response.NotFound(c)
@@ -111,5 +110,5 @@ func DeleteStore(c *gin.Context) {
 		response.ServerError(c)
 		return
 	}
-	response.OkWithMessage(c, "Delte Successful")
+	response.OkWithMessage(c, "Delete Successful")
 }

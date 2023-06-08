@@ -3,7 +3,7 @@ package models
 import (
 	"database/sql"
 
-	"online.shop.autmaple.com/internal/utils/dbutil"
+	"online.shop.autmaple.com/internal/db"
 )
 
 type Store struct {
@@ -17,7 +17,7 @@ type Store struct {
 // QueryById may return the following error type: ErrNotRows
 func (s *Store) QueryById(tx *sql.Tx) error {
 	stmt := `select brand_ids, name, address, phone from goods_store where id = ?`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}
@@ -33,7 +33,7 @@ func (s *Store) PageQuery(tx *sql.Tx, offset, size int) ([]*Store, error) {
 	stmt := `SELECT id,brand_ids,name,address,phone FROM goods_store
   WHERE id >= (SELECT id FROM goods_store WHERE enable = true ORDER BY id LIMIT ?, 1) AND enable = true
   ORDER BY id LIMIT ?`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return nil, DetailError(err)
 	}
@@ -58,7 +58,7 @@ func (s *Store) PageQuery(tx *sql.Tx, offset, size int) ([]*Store, error) {
 
 func (s *Store) Insert(tx *sql.Tx) error {
 	stmt := `INSERT INTO goods_store(brand_ids,name,address,phone) VALUES(?,?,?,?)`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}
@@ -78,7 +78,7 @@ func (s *Store) Insert(tx *sql.Tx) error {
 // Delete return ErrRecordNotFound error if no rows affected
 func (s *Store) Delete(tx *sql.Tx) error {
 	stmt := `UPDATE goods_store SET enable = false WHERE id = ?`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}
@@ -98,7 +98,7 @@ func (s *Store) Delete(tx *sql.Tx) error {
 
 func (s *Store) Update(tx *sql.Tx) error {
 	stmt := `UPDATE goods_store SET brand_ids = ?, name = ?, address = ?, phone = ? WHERE id = ?`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}

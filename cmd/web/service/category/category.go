@@ -1,32 +1,40 @@
-package services
+package category
 
 import (
-	"online.shop.autmaple.com/internal/dto"
 	"online.shop.autmaple.com/internal/models"
 )
 
-func QueryCategory(id int) (*dto.CategoryDto, error) {
+type Form struct {
+	Name string `json:"name" binding:"required,min=1"`
+}
+
+type Dto struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+func QueryCategory(id int) (*Dto, error) {
 	c := models.Category{ID: id}
 	err := c.QueryById(nil)
 	if err != nil {
 		return nil, err
 	}
-	categoryDto := &dto.CategoryDto{
+	categoryDto := &Dto{
 		ID:   c.ID,
 		Name: c.Name,
 	}
 	return categoryDto, nil
 }
 
-func PageQueryCategory(offset, size int) ([]*dto.CategoryDto, error) {
+func PageQueryCategory(offset, size int) ([]*Dto, error) {
 	c := models.Category{}
 	categoryList, err := c.PageQuery(nil, offset, size)
 	if err != nil {
 		return nil, err
 	}
-	var categoryDtoList []*dto.CategoryDto
+	var categoryDtoList []*Dto
 	for _, category := range categoryList {
-		categoryDto := &dto.CategoryDto{
+		categoryDto := &Dto{
 			ID:   category.ID,
 			Name: category.Name,
 		}
@@ -35,7 +43,7 @@ func PageQueryCategory(offset, size int) ([]*dto.CategoryDto, error) {
 	return categoryDtoList, nil
 }
 
-func UpdateCategory(id int, categoryForm *dto.CategoryForm) error {
+func UpdateCategory(id int, categoryForm *Form) error {
 	c := models.Category{
 		ID:   id,
 		Name: categoryForm.Name,
@@ -58,7 +66,7 @@ func DeleteCategory(id int) error {
 	return nil
 }
 
-func InsertCategory(categoryForm *dto.CategoryForm) error {
+func InsertCategory(categoryForm *Form) error {
 	c := models.Category{
 		Name: categoryForm.Name,
 	}

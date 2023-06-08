@@ -1,4 +1,4 @@
-package handlers
+package handler
 
 import (
 	"database/sql"
@@ -7,9 +7,8 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"online.shop.autmaple.com/cmd/web/services"
-	"online.shop.autmaple.com/internal/dto"
-	"online.shop.autmaple.com/internal/utils/response"
+	"online.shop.autmaple.com/cmd/web/service/brand"
+	"online.shop.autmaple.com/internal/response"
 )
 
 // QueryBrand will handle `GET /brand/:id` request
@@ -19,7 +18,7 @@ func QueryBrand(c *gin.Context) {
 		response.InvalidParam(c, "id")
 		return
 	}
-	brandDto, err := services.QueryBrand(id)
+	brandDto, err := brand.QueryBrand(id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			response.NotFound(c)
@@ -44,7 +43,7 @@ func PageQueryBrand(c *gin.Context) {
 		return
 	}
 
-	brandDtos, err := services.PageQueryBrand(offset, size)
+	brandDtos, err := brand.PageQueryBrand(offset, size)
 	if err != nil {
 		response.ServerError(c)
 		return
@@ -58,13 +57,13 @@ func PageQueryBrand(c *gin.Context) {
 
 // InsertBrand will handle `PoST /brand` request
 func InsertBrand(c *gin.Context) {
-	var brandForm dto.BrandForm
+	var brandForm brand.Form
 	err := c.ShouldBindJSON(&brandForm)
 	if err != nil {
 		response.UnprocessableEntiy(c)
 		return
 	}
-	err = services.InsertBrand(&brandForm)
+	err = brand.InsertBrand(&brandForm)
 	if err != nil {
 		response.ServerError(c)
 		return
@@ -79,13 +78,13 @@ func UpdateBrand(c *gin.Context) {
 		response.InvalidParam(c, "id")
 		return
 	}
-	var brandForm dto.BrandForm
+	var brandForm brand.Form
 	err = c.ShouldBindJSON(&brandForm)
 	if err != nil {
 		response.UnprocessableEntiy(c)
 		return
 	}
-	err = services.UpdateBrand(id, &brandForm)
+	err = brand.UpdateBrand(id, &brandForm)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			response.NotFound(c)
@@ -104,7 +103,7 @@ func DeleteBrand(c *gin.Context) {
 		response.InvalidParam(c, "id")
 		return
 	}
-	err = services.DeleteBrand(id)
+	err = brand.DeleteBrand(id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			response.NotFound(c)

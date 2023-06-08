@@ -3,7 +3,7 @@ package models
 import (
 	"database/sql"
 
-	"online.shop.autmaple.com/internal/utils/dbutil"
+	"online.shop.autmaple.com/internal/db"
 )
 
 type Sku struct {
@@ -15,7 +15,7 @@ type Sku struct {
 // QueryById may return the following error thpe: ErrNotRows
 func (s *Sku) QueryById(tx *sql.Tx) error {
 	stmt := `SELECT spu_id, stock FROM goods_sku WHERE id = ? AND enable = true`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}
@@ -34,7 +34,7 @@ func (fs *Sku) PageQuery(tx *sql.Tx, offset, size int) ([]*Sku, error) {
   WHERE id >= (SELECT id FROM goods_sku WHERE enable = true ORDER BY id LIMIT ?, 1) AND enable = true
   ORDER BY id
   LIMIT ?`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return nil, DetailError(err)
 	}
@@ -54,7 +54,7 @@ func (fs *Sku) PageQuery(tx *sql.Tx, offset, size int) ([]*Sku, error) {
 
 func (s *Sku) Insert(tx *sql.Tx) error {
 	stmt := `INSERT INTO goods_sku(spu_id, stock) VALUES(?,?)`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}
@@ -72,7 +72,7 @@ func (s *Sku) Insert(tx *sql.Tx) error {
 
 func (s *Sku) Update(tx *sql.Tx) error {
 	stmt := `UPDATE goods_sku set sku_id = ?, stock = ? WHERE id = ?`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}
@@ -85,7 +85,7 @@ func (s *Sku) Update(tx *sql.Tx) error {
 
 func (s *Sku) Delete(tx *sql.Tx) error {
 	stmt := `UPDATE goods_sku SET enable = false WHERE id = ?`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}
@@ -98,7 +98,7 @@ func (s *Sku) Delete(tx *sql.Tx) error {
 
 func (s *Sku) InsertAttrOption(tx *sql.Tx, attrs []int) error {
 	stmt := `INSERT INTO goods_sku_attr_option(attr_option_id, sku_id) VALUES(?,?)`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}
@@ -113,7 +113,7 @@ func (s *Sku) InsertAttrOption(tx *sql.Tx, attrs []int) error {
 
 func (s *Sku) InsertSpecificationGroup(tx *sql.Tx, group string) (int, error) {
 	stmt := `INSERT INTO goods_sku_specification_group(sku_id, name) VALUES(?,?)`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return -1, DetailError(err)
 	}
@@ -127,7 +127,7 @@ func (s *Sku) InsertSpecificationGroup(tx *sql.Tx, group string) (int, error) {
 
 func (s *Sku) InsertSpecification(tx *sql.Tx, group int, name, value string) error {
 	stmt := `INSERT INTO goods_sku_specification(group_id, specification, value) VALUES(?,?,?)`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}
@@ -147,7 +147,7 @@ func (s *Sku) QueryAttrs(tx *sql.Tx) (map[string]string, error) {
   LEFT JOIN goods_attr AS a
   ON b.attr_id = a.id 
   WHERE sku_id = ? AND a.enable = true AND b.enable = true AND c.enable = true`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return nil, DetailError(err)
 	}
@@ -173,7 +173,7 @@ func (s *Sku) QuerySpecifications(tx *sql.Tx) (map[string]map[string]string, err
   LEFT JOIN goods_sku_specification AS b
   ON a.id = b.group_id
   WHERE sku_id = ? AND a.enable = true AND b.enable = true`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return nil, DetailError(err)
 	}
@@ -199,7 +199,7 @@ func (s *Sku) QuerySpecifications(tx *sql.Tx) (map[string]map[string]string, err
 
 func (s *Sku) DeleteSpecification(tx *sql.Tx) error {
 	query := `SELECT id FROM goods_sku_specification_group WHERE sku_id = ? AND enable = true`
-	prepare, err := dbutil.ToPrepare(tx, query)
+	prepare, err := db.ToPrepare(tx, query)
 	if err != nil {
 		return DetailError(err)
 	}
@@ -217,7 +217,7 @@ func (s *Sku) DeleteSpecification(tx *sql.Tx) error {
 		groupIds = append(groupIds, group)
 	}
 	deleteSpec := `UPDATE goods_sku_specification SET enable = false WHERE group_id = ?`
-	prepare, err = dbutil.ToPrepare(tx, deleteSpec)
+	prepare, err = db.ToPrepare(tx, deleteSpec)
 	for _, groupId := range groupIds {
 		_, err := prepare.Exec(groupId)
 		if err != nil {
@@ -225,7 +225,7 @@ func (s *Sku) DeleteSpecification(tx *sql.Tx) error {
 		}
 	}
 	update := `UPDATE goods_sku_specification_group SET enable = false WHERE sku_id = ?`
-	prepare, err = dbutil.ToPrepare(tx, update)
+	prepare, err = db.ToPrepare(tx, update)
 	if err != nil {
 		return DetailError(err)
 	}
@@ -238,7 +238,7 @@ func (s *Sku) DeleteSpecification(tx *sql.Tx) error {
 
 func (s *Sku) DeleteAttrs(tx *sql.Tx) error {
 	stmt := `UPDATE goods_sku_attr_option SET enable = false WHERE sku_id = ?`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}

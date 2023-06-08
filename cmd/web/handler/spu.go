@@ -1,4 +1,4 @@
-package handlers
+package handler
 
 import (
 	"database/sql"
@@ -6,10 +6,9 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"online.shop.autmaple.com/cmd/web/services"
-	"online.shop.autmaple.com/internal/dto"
+	"online.shop.autmaple.com/cmd/web/service/spu"
 	"online.shop.autmaple.com/internal/models"
-	"online.shop.autmaple.com/internal/utils/response"
+	"online.shop.autmaple.com/internal/response"
 )
 
 // QuerySpu will handle the `GET /spu/:id` request
@@ -19,7 +18,7 @@ func QuerySpu(c *gin.Context) {
 		response.InvalidParam(c, "id")
 		return
 	}
-	spuDto, err := services.QuerySpu(id)
+	spuDto, err := spu.QuerySpu(id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			response.NotFound(c)
@@ -43,7 +42,7 @@ func PageQuerySpu(c *gin.Context) {
 		response.UnprocessableEntiy(c)
 		return
 	}
-	spuDtoList, err := services.PageQuerySpu(offset, size)
+	spuDtoList, err := spu.PageQuerySpu(offset, size)
 	if err != nil {
 		response.ServerError(c)
 		return
@@ -57,12 +56,12 @@ func PageQuerySpu(c *gin.Context) {
 
 // InsertSpu will handle the `POST /spu` request
 func InsertSpu(c *gin.Context) {
-	var spuForm dto.SpuForm
+	var spuForm spu.Form
 	if err := c.ShouldBind(&spuForm); err != nil {
 		response.UnprocessableEntiy(c)
 		return
 	}
-	if err := services.InsertSpu(&spuForm); err != nil {
+	if err := spu.InsertSpu(&spuForm); err != nil {
 		response.ServerError(c)
 		return
 	}
@@ -77,7 +76,7 @@ func DeleteSpu(c *gin.Context) {
 		response.InvalidParam(c, "id")
 		return
 	}
-	err = services.DeleteSpu(id)
+	err = spu.DeleteSpu(id)
 	if err != nil {
 		if errors.Is(err, models.ErrRecordNotFound) {
 			response.NotFound(c)

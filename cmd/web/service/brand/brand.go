@@ -1,55 +1,58 @@
-package services
+package brand
 
 import (
-	"online.shop.autmaple.com/internal/configs/db"
-	"online.shop.autmaple.com/internal/dto"
 	"online.shop.autmaple.com/internal/models"
 )
 
-func InsertBrand(brandForm *dto.BrandForm) error {
-	tx, err := db.GetMysqlDB().Begin()
-	if err != nil {
-		return err
-	}
+type Form struct {
+	Name  string `json:"name" binding:"required,min=1"`
+	Image string `json:"image" binding:"required,min=1"`
+}
+
+type Dto struct {
+	Name  string `json:"name"`
+	Image string `json:"image"`
+}
+
+func InsertBrand(brandForm *Form) error {
 	brand := *&models.Brand{Name: brandForm.Name, Image: brandForm.Image}
-	err = brand.Insert(tx)
+	err := brand.Insert(nil)
 	if err != nil {
 		return err
 	}
-	tx.Commit()
 	return nil
 }
 
-func QueryBrand(id int) (*dto.BrandDto, error) {
+func QueryBrand(id int) (*Dto, error) {
 	brand := &models.Brand{ID: id}
 	err := brand.QueryById(nil)
 	if err != nil {
 		return nil, err
 	}
-	brandDto := &dto.BrandDto{
+	brandDto := &Dto{
 		Name:  brand.Name,
 		Image: brand.Image,
 	}
 	return brandDto, nil
 }
-func PageQueryBrand(offset, size int) ([]*dto.BrandDto, error) {
+func PageQueryBrand(offset, size int) ([]*Dto, error) {
 	brand := &models.Brand{}
 	brandList, err := brand.PageQuery(nil, offset, size)
 	if err != nil {
 		return nil, err
 	}
-	var brandDtoList []*dto.BrandDto
+	var brandist []*Dto
 	for _, brand := range brandList {
-		brandDto := &dto.BrandDto{
+		brand := &Dto{
 			Name:  brand.Name,
 			Image: brand.Image,
 		}
-		brandDtoList = append(brandDtoList, brandDto)
+		brandist = append(brandist, brand)
 	}
-	return brandDtoList, nil
+	return brandist, nil
 }
 
-func UpdateBrand(id int, brandForm *dto.BrandForm) error {
+func UpdateBrand(id int, brandForm *Form) error {
 	brand := *&models.Brand{
 		ID:    id,
 		Name:  brandForm.Name,

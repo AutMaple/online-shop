@@ -2,7 +2,7 @@ package models
 
 import (
 	"database/sql"
-	"online.shop.autmaple.com/internal/utils/dbutil"
+	"online.shop.autmaple.com/internal/db"
 )
 
 type Spu struct {
@@ -16,7 +16,7 @@ type Spu struct {
 // QueryById may return the following error type: ErrNotRows
 func (s *Spu) QueryById(tx *sql.Tx) error {
 	stmt := `SELECT name, brand_id, category_id, store_id FROM goods_spu WHERE id = ? AND enable = true`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}
@@ -33,7 +33,7 @@ func (s *Spu) PageQuery(tx *sql.Tx, offset, size int) ([]*Spu, error) {
 	stmt := `SELECT id, name, brand_id, category_id FROM goods_spu
   WHERE id >= (SELECT id FROM goods_spu WHERE enable = true ORDER BY id LIMIT ?, 1) AND enable = true
   ORDER BY id LIMIT ?`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return nil, DetailError(err)
 	}
@@ -58,7 +58,7 @@ func (s *Spu) PageQuery(tx *sql.Tx, offset, size int) ([]*Spu, error) {
 
 func (s *Spu) Insert(tx *sql.Tx) (int, error) {
 	stmt := `INSERT INTO goods_spu(name,brand_id,category_id, store_id) VALUES(?,?,?,?)`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return -1, DetailError(err)
 	}
@@ -77,7 +77,7 @@ func (s *Spu) Insert(tx *sql.Tx) (int, error) {
 // Delete return ErrRecordNotFound error if no rows affected
 func (s *Spu) Delete(tx *sql.Tx) error {
 	stmt := `UPDATE goods_spu SET enable = false WHERE id = ? and enable = true`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}
@@ -97,7 +97,7 @@ func (s *Spu) Delete(tx *sql.Tx) error {
 
 func (s *Spu) QuerySkuIds(tx *sql.Tx) ([]int, error) {
 	stmt := `SELECT id FROM goods_sku WHERE spu_id = ?`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return nil, DetailError(err)
 	}

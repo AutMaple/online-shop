@@ -1,14 +1,28 @@
-package services
+package sku
 
 import (
 	"database/sql"
+	"strings"
 
+	"github.com/go-playground/validator/v10"
 	"online.shop.autmaple.com/internal/configs/db"
-	"online.shop.autmaple.com/internal/dto"
 	"online.shop.autmaple.com/internal/models"
 )
+type Form struct {
+	Spu            int                          `json:"spu" binding:"required,min=1"`
+	Stock          int                          `json:"stock" binding:"required,min=0"`
+	Attrs          []int                        `json:"attrs" binding:"required,min=1"`
+	Specifications map[string]map[string]string `json:"specifications" binding:"required,specifications"`
+}
 
-func InsertSku(skuForm *dto.SkuForm) error {
+type Dto struct {
+	ID             int                          `json:"id"`
+	Name           string                       `json:"name"`
+	Stock          int                          `json:"stock"`
+	Attrs          map[string]string            `json:"attrs"`
+	Specifications map[string]map[string]string `json:"specifications"`
+}
+func InsertSku(skuForm *Form) error {
 	tx, err := db.GetMysqlDB().Begin()
 	if err != nil {
 		tx.Rollback()
@@ -48,9 +62,9 @@ func InsertSku(skuForm *dto.SkuForm) error {
 	return nil
 }
 
-func QuerySku(id int) (*dto.SkuDto, error) {
+func QuerySku(id int) (*Dto, error) {
 	// 1. 查询 sku 的基本信息
-	var skuDto dto.SkuDto
+	var skuDto Dto
 	sku := &models.Sku{ID: id}
 	err := sku.QueryById(nil)
 	if err != nil {
@@ -74,7 +88,7 @@ func QuerySku(id int) (*dto.SkuDto, error) {
 	if err != nil {
 		return nil, err
 	}
-	skuDto.ID = sku.ID
+  skuDto.ID = sku.ID
 	skuDto.Stock = sku.Stock
 	skuDto.Name = spu.Name
 	skuDto.Attrs = attrs
@@ -82,13 +96,13 @@ func QuerySku(id int) (*dto.SkuDto, error) {
 	return &skuDto, nil
 }
 
-func PageQuerySku(offset, size int) ([]*dto.SkuDto, error) {
+func PageQuerySku(offset, size int) ([]*Dto, error) {
 	sku := models.Sku{}
 	skus, err := sku.PageQuery(nil, offset, size)
 	if err != nil {
 		return nil, err
 	}
-	var res []*dto.SkuDto
+	var res []*Dto
 	for _, sku := range skus {
 		err := sku.QueryById(nil)
 		if err != nil {
@@ -103,7 +117,8 @@ func PageQuerySku(offset, size int) ([]*dto.SkuDto, error) {
 	return res, nil
 }
 
-func UpdateSku(id int, skuForm *dto.SkuForm) error {
+
+func UpdateSku(id int, skuForm *Form) error {
 	tx, err := db.GetMysqlDB().Begin()
 	if err != nil {
 		tx.Rollback()
@@ -211,4 +226,27 @@ func DeleteSkuWithOuterTx(tx *sql.Tx, id int) error {
 		return err
 	}
 	return nil
+}
+
+
+// SpecificationValidator require the key and the value of specification not empty
+func SpecificationValidator(fl validator.FieldLevel) bool {
+	specificationGroups, ok := fl.Field().Interface().(map[string]map[string]string)
+	if ok {
+		if groupLen := len(specificationGroups); groupLen == 0 {
+			return false
+		}
+		for _, specifications := range specificationGroups {
+			if specLen := len(specifications); specLen == 0 {
+				return false
+			}
+			for name, value := range specifications {
+				if len(strings.TrimSpace(name)) == 0 || len(strings.TrimSpace(value)) == 0 {
+					return false
+				}
+			}
+		}
+		return true
+	}
+	return true
 }

@@ -3,7 +3,7 @@ package models
 import (
 	"database/sql"
 
-	"online.shop.autmaple.com/internal/utils/dbutil"
+	"online.shop.autmaple.com/internal/db"
 )
 
 type Category struct {
@@ -13,7 +13,7 @@ type Category struct {
 
 func (c *Category) QueryById(tx *sql.Tx) error {
 	stmt := `select name from goods_category where id = ? AND enable = true`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}
@@ -30,7 +30,7 @@ func (c *Category) PageQuery(tx *sql.Tx, offset, size int) ([]*Category, error) 
   SELECT id, name FROM goods_category 
   WHERE id >= (SELECT id FROM goods_category WHERE enable = true ORDER BY id LIMIT ?, 1) AND enable = true
   ORDER BY id LIMIT ?`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return nil, DetailError(err)
 	}
@@ -53,7 +53,7 @@ func (c *Category) PageQuery(tx *sql.Tx, offset, size int) ([]*Category, error) 
 
 func (c *Category) Insert(tx *sql.Tx) error {
 	stmt := `INSERT INTO goods_category(name) VALUES(?)`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}
@@ -71,7 +71,7 @@ func (c *Category) Insert(tx *sql.Tx) error {
 
 func (c *Category) Update(tx *sql.Tx) error {
 	stmt := `UPDATE goods_category SET name = ? WHERE id = ?`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}
@@ -91,7 +91,7 @@ func (c *Category) Update(tx *sql.Tx) error {
 
 func (c *Category) Delete(tx *sql.Tx) error {
 	stmt := `UPDATE goods_category SET enable = false WHERE id = ?`
-	prepare, err := dbutil.ToPrepare(tx, stmt)
+	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}

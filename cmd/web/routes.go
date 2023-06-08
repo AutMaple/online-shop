@@ -2,48 +2,48 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"online.shop.autmaple.com/cmd/web/handlers"
+	"online.shop.autmaple.com/cmd/web/handler"
 )
 
 func RegisterRoutes(c *gin.Engine) {
 	// spu
-	c.GET("/spu/:id", handlers.QuerySpu)
-	c.POST("/spu", handlers.InsertSpu)
-	c.GET("/spu", handlers.PageQuerySpu)
-	c.DELETE("/spu/:id", handlers.DeleteSpu)
+	c.GET("/spu/:id", handler.QuerySpu)
+	c.POST("/spu", handler.InsertSpu)
+	c.GET("/spu", handler.PageQuerySpu)
+	c.DELETE("/spu/:id", handler.DeleteSpu)
 
 	// sku
-	c.GET("/sku/:id", handlers.QuerySku)
-	c.POST("/sku", handlers.InsertSku)
-	c.GET("/sku", handlers.PageQuerySku)
-	c.PUT("/sku/:id", handlers.UpdateSku)
-	c.DELETE("/sku/:id", handlers.DeleteSku)
+	c.GET("/sku/:id", handler.QuerySku)
+	c.POST("/sku", handler.InsertSku)
+	c.GET("/sku", handler.PageQuerySku)
+	c.PUT("/sku/:id", handler.UpdateSku)
+	c.DELETE("/sku/:id", handler.DeleteSku)
 
 	// brand
-	c.GET("/brand/:id", handlers.QueryBrand)
-	c.POST("/brand", handlers.InsertBrand)
-	c.GET("/brand", handlers.PageQueryBrand)
-	c.PUT("/brand/:id", handlers.UpdateBrand)
-	c.DELETE("/brand/:id", handlers.DeleteBrand)
+	c.GET("/brand/:id", handler.QueryBrand)
+	c.POST("/brand", handler.InsertBrand)
+	c.GET("/brand", handler.PageQueryBrand)
+	c.PUT("/brand/:id", handler.UpdateBrand)
+	c.DELETE("/brand/:id", handler.DeleteBrand)
 
 	// category
-	c.GET("/category/:id", handlers.QueryCategory)
-	c.POST("/category", handlers.InsertCategory)
-	c.GET("/category", handlers.PageQueryCategory)
-	c.PUT("/category/:id", handlers.UpdateCategory)
-	c.DELETE("/category/:id", handlers.DeleteCategory)
+	c.GET("/category/:id", handler.QueryCategory)
+	c.POST("/category", handler.InsertCategory)
+	c.GET("/category", handler.PageQueryCategory)
+	c.PUT("/category/:id", handler.UpdateCategory)
+	c.DELETE("/category/:id", handler.DeleteCategory)
 
 	// store
-	c.GET("/store/:id", handlers.QueryStore)
-	c.POST("/store", handlers.InsertStore)
-	c.GET("/store", handlers.PageQueryStore)
-	c.PUT("/store/:id", handlers.UpdateStore)
-	c.DELETE("/store/:id", handlers.DeleteStore)
+	c.GET("/store/:id", handler.QueryStore)
+	c.POST("/store", handler.InsertStore)
+	c.GET("/store", handler.PageQueryStore)
+	c.PUT("/store/:id", handler.UpdateStore)
+	c.DELETE("/store/:id", handler.DeleteStore)
 
-	// store
-	c.GET("/user/:id", handlers.QueryUser)
-	c.POST("/user", handlers.InsertUser)
-	c.GET("/user", handlers.PageQueryUser)
-	c.PUT("/user/:id", handlers.UpdateUser)
-	c.DELETE("/user/:id", handlers.DeleteUser)
+	// user
+	c.GET("/user/:id", handler.QueryUser)
+	c.POST("/user", handler.InsertUser)
+	c.GET("/user", handler.PageQueryUser)
+	c.PUT("/user/:id", handler.UpdateUser)
+	c.DELETE("/user/:id", handler.DeleteUser)
 }

@@ -1,17 +1,30 @@
-package services
+package store
 
 import (
-	"online.shop.autmaple.com/internal/dto"
 	"online.shop.autmaple.com/internal/models"
 )
 
-func QueryStore(id int) (*dto.StoreDto, error) {
+type Dto struct {
+	ID      int    `json:"id"`
+	Name    string `json:"name"`
+	Address string `json:"address"`
+	Phone   string `json:"phone"`
+}
+
+type Form struct {
+	BrandIds string `json:"brandIds" binding:"required,min=1"`
+	Name     string `json:"name" binding:"required,min=1"`
+	Address  string `json:"address" binding:"required,min=1"`
+	Phone    string `json:"phone" binding:"required,min=1"`
+}
+
+func QueryStore(id int) (*Dto, error) {
 	s := &models.Store{ID: id}
 	err := s.QueryById(nil)
 	if err != nil {
 		return nil, err
 	}
-	store := &dto.StoreDto{
+	store := &Dto{
 		ID:      s.ID,
 		Name:    s.Name,
 		Address: s.Address,
@@ -20,15 +33,15 @@ func QueryStore(id int) (*dto.StoreDto, error) {
 	return store, nil
 }
 
-func PageQueryStore(offset, size int) ([]*dto.StoreDto, error) {
+func PageQueryStore(offset, size int) ([]*Dto, error) {
 	s := &models.Store{}
 	storeList, err := s.PageQuery(nil, offset, size)
 	if err != nil {
 		return nil, err
 	}
-	var storeDtoList []*dto.StoreDto
+	var storeDtoList []*Dto
 	for _, store := range storeList {
-		storeDto := &dto.StoreDto{
+		storeDto := &Dto{
 			ID:      store.ID,
 			Name:    store.Name,
 			Address: store.Address,
@@ -39,7 +52,7 @@ func PageQueryStore(offset, size int) ([]*dto.StoreDto, error) {
 	return storeDtoList, nil
 }
 
-func InsertStore(store *dto.StoreForm) error {
+func InsertStore(store *Form) error {
 	s := models.Store{
 		BrandIds: store.BrandIds,
 		Name:     store.Name,
@@ -53,7 +66,7 @@ func InsertStore(store *dto.StoreForm) error {
 	return nil
 }
 
-func UpdateStore(id int, store *dto.StoreForm) error {
+func UpdateStore(id int, store *Form) error {
 	s := models.Store{
 		ID:       id,
 		BrandIds: store.BrandIds,
