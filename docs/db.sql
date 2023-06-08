@@ -121,4 +121,67 @@ CREATE TABLE ums_user
     create_time DATETIME NOT NULL COMMENT '创建时间',
     update_time DATETIME NOT NULL COMMENT '更新时间',
     enable BOOLEAN      NOT NULL DEFAULT TRUE COMMENT '是否可用'
-)
+);
+
+DROP TABLE IF EXISTS ums_position;
+CREATE TABLE ums_position(
+  id INT PRIMARY KEY AUTO_INCREMENT COMMENT 'ID',
+  name VARCHAR(255) NOT NULL COMMENT '职位'
+);
+
+DROP TABLE IF EXISTS ums_organization;
+CREATE TABLE ums_organization(
+  id INT PRIMARY KEY AUTO_INCREMENT COMMENT 'ID',
+  name VARCHAR(255) NOT NULL COMMENT '组织名'
+);
+
+DROP TABLE IF EXISTS ums_organization_leader;
+CREATE TABLE ums_organization_leader(
+  id INT PRIMARY KEY AUTO_INCREMENT COMMENT 'ID',
+  user_id INT NOT NULL COMMENT '用户ID',
+  organization_id INT NOT NULL COMMENT '组织ID'
+);
+
+DROP TABLE IF EXISTS ums_user_organization;
+CREATE TABLE ums_user_organization(
+  id INT PRIMARY KEY AUTO_INCREMENT COMMENT 'ID',
+  user_id INT NOT NULL COMMENT '用户 ID',
+  organization_id INT NOT NULL COMMENT '组织 ID'
+);
+
+DROP TABLE IF EXISTS ums_user_position;
+CREATE TABLE ums_user_position(
+  id INT PRIMARY KEY AUTO_INCREMENT COMMENT 'ID',
+  user_id INT NOT NULL COMMENT '用户 ID',
+  position_id INT NOT NULL COMMENT '职位 ID'
+);
+
+DROP TABLE IF EXISTS ums_role;
+CREATE TABLE ums_role(
+  id INT PRIMARY KEY AUTO_INCREMENT COMMENT 'ID',
+  name VARCHAR(255) NOT NULL COMMENT '角色名'
+);
+
+DROP TABLE IF EXISTS ums_user_role;
+CREATE TABLE ums_user_role(
+  id INT PRIMARY KEY AUTO_INCREMENT COMMENT 'ID',
+  user_id INT NOT NULL COMMENT '用户 ID',
+  role_id INT NOT NULL COMMENT '角色 ID'
+);
+
+DROP TABLE IF EXISTS ums_menu;
+CREATE TABLE ums_menu(
+  id INT PRIMARY KEY AUTO_INCREMENT COMMENT 'ID',
+  name VARCHAR(255) NOT NULL COMMENT '菜单名',
+  url VARCHAR(255) NOT NULL COMMENT 'URL',
+  parent INT NOT NULL COMMENT '父级菜单 ID'
+);
+
+DROP TABLE IF EXISTS ums_role_menu;
+CREATE TABLE ums_role_menu(
+  id INT PRIMARY KEY AUTO_INCREMENT COMMENT 'ID',
+  role_id INT NOT NULL COMMENT '角色 ID',
+  menu_id INT NOT NULL COMMENT '菜单 ID'
+);
+
+
