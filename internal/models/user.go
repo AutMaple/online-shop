@@ -2,25 +2,30 @@ package models
 
 import (
 	"database/sql"
+	"time"
 
 	"online.shop.autmaple.com/internal/db"
 )
 
 type User struct {
-	ID    int
-	Name  string
-	Email string
-	Phone string
+	ID         int
+	Name       string
+	Email      string
+	Phone      string
+	Password   string
+	Avatar     string
+	LoginTime  time.Time
+	CreateTime time.Time
 }
 
 func (u *User) QueryById(tx *sql.Tx) error {
-	stmt := `SELECT name, email, phone FROM ums_user WHERE id = ? and enable = true`
+	stmt := `SELECT id, name, email, phone,password,avatar,login_time,create_time FROM ums_user WHERE id = ? and enable = true`
 	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}
 	row := prepare.QueryRow(u.ID)
-	err = row.Scan(&u.Name, &u.Email, &u.Phone)
+	err = row.Scan(&u.ID, &u.Name, &u.Email, &u.Phone, &u.Password, &u.Avatar, &u.LoginTime, &u.CreateTime)
 	if err != nil {
 		return DetailError(err)
 	}
@@ -29,7 +34,7 @@ func (u *User) QueryById(tx *sql.Tx) error {
 
 func (u *User) PageQuery(tx *sql.Tx, offset, size int) ([]*User, error) {
 	stmt := `
-  SELECT id, name, email, phone FROM ums_user 
+  SELECT id, name, email, phone, password, avatar, login_time, create_time FROM ums_user 
   WHERE id >= (SELECT id FROM ums_user WHERE enable = true ORDER BY id LIMIT ?,1) 
   AND enable = true ORDER BY id LIMIT ?`
 	prepare, err := db.ToPrepare(tx, stmt)
@@ -44,7 +49,16 @@ func (u *User) PageQuery(tx *sql.Tx, offset, size int) ([]*User, error) {
 	var users []*User
 	for rows.Next() {
 		var user User
-		err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.Phone)
+		err := rows.Scan(
+			&user.ID,
+			&user.Name,
+			&user.Email,
+			&user.Phone,
+			&user.Password,
+			&user.Avatar,
+			&user.LoginTime,
+			&user.CreateTime,
+		)
 		if err != nil {
 			return nil, DetailError(err)
 		}
@@ -54,12 +68,12 @@ func (u *User) PageQuery(tx *sql.Tx, offset, size int) ([]*User, error) {
 }
 
 func (u *User) Insert(tx *sql.Tx) error {
-	stmt := `insert into ums_user(name, email, phone) values(?,?,?)`
+	stmt := `insert into ums_user(name, email, phone, password, avatar, login_time, create_time) values(?,?,?)`
 	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}
-	result, err := prepare.Exec(u.Name, u.Email, u.Phone)
+	result, err := prepare.Exec(u.Name, u.Email, u.Phone, u.Password, u.Avatar, u.LoginTime, u.CreateTime)
 	if err != nil {
 		return DetailError(err)
 	}
@@ -72,12 +86,12 @@ func (u *User) Insert(tx *sql.Tx) error {
 }
 
 func (u *User) Update(tx *sql.Tx) error {
-	stmt := `update ums_user set name = ?, email = ?, phone = ? where id = ?`
+	stmt := `update ums_user set name = ?, email = ?, phone = ?, avatar = ? where id = ?`
 	prepare, err := db.ToPrepare(tx, stmt)
 	if err != nil {
 		return DetailError(err)
 	}
-	result, err := prepare.Exec(u.Name, u.Email, u.Phone, u.ID)
+	result, err := prepare.Exec(u.Name, u.Email, u.Phone, u.Avatar, u.ID)
 	if err != nil {
 		return DetailError(err)
 	}
