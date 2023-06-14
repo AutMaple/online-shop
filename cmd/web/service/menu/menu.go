@@ -1,8 +1,6 @@
 package menu
 
 import (
-	"go/format"
-
 	"online.shop.autmaple.com/internal/models"
 )
 
