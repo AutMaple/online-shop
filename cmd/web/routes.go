@@ -49,4 +49,5 @@ func RegisterRoutes(c *gin.Engine) {
 
 	// menu
 	c.GET("/menu", handler.QueryMenu)
+  c.POST("/menu/batch", handler.InsertMenus)
 }

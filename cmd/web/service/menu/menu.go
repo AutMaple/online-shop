@@ -71,12 +71,43 @@ func InsertMenu(menu *Form) error {
 	if err != nil {
 		return err
 	}
+  menu.ID = m.ID
 	return nil
 }
 
-func InsertMenus(menus []*Form) error {
+func InsertMenus(menus []*Dto) error {
 	for _, menu := range menus {
-		err := InsertMenu(menu)
+		form := &Form{
+			Title:  menu.Title,
+			Icon:   menu.Icon,
+			Url:    menu.Url,
+			Parent: -1,
+		}
+		err := InsertMenu(form)
+		if err != nil {
+			return err
+		}
+		err = InsertSubMenus(form.ID, menu.SubMenu)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func InsertSubMenus(parent int, subMenus []*Dto) error {
+	for _, menu := range subMenus {
+		form := &Form{
+			Title:  menu.Title,
+			Icon:   menu.Icon,
+			Url:    menu.Url,
+			Parent: parent,
+		}
+		err := InsertMenu(form)
+		if err != nil {
+			return err
+		}
+		err = InsertSubMenus(form.ID, menu.SubMenu)
 		if err != nil {
 			return err
 		}
